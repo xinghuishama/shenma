@@ -1,0 +1,17 @@
+body {
+  font-family: sans-serif;
+  padding: 10px;
+}
+
+textarea {
+  width: 100%;
+  height: 80px;
+}
+
+.ball {
+  display: inline-block;
+  margin: 5px;
+  padding: 10px;
+  background: #eee;
+  border-radius: 50%;
+}
