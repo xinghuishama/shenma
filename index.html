@@ -3,96 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>神码再现 v3.6 · 智能分析引擎</title>
+<title>神码再现 v3.7 · 智能分析引擎</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.0/dist/hls.min.js"></script> <link rel="stylesheet" href="style.css">
-<script src="data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.0/dist/hls.min.js"></script>
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="mech-grid">
 
-<!-- 粒子画布 -->
 <canvas id="particle-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
 
 <div class="relative z-10 max-w-md mx-auto px-3 pt-4 pb-24">
-
-  <!-- 标题 -->
   <header class="text-center mb-4">
     <h1 class="text-2xl font-bold text-[#00ffea] tracking-wider" style="text-shadow:0 0 10px rgba(0,255,234,0.5);">神码再现</h1>
-    <p class="text-xs text-gray-400 mt-1">v3.6 工程级安全版 · 防抖200ms · 上限5000个</p>
+    <p class="text-xs text-gray-400 mt-1">v3.7 工程级安全版 · 防抖200ms · 上限5000个</p>
   </header>
 
-  <!-- 开奖区 -->
   <div class="lottery-card mb-4">
     <div class="flex justify-between items-center mb-2">
-      <div>
-        <div class="text-xs text-gray-400">第 <span id="lotteryPeriod" class="text-[#00ffea] font-bold">--</span> 期</div>
-        <div class="text-[10px] text-gray-500 mt-0.5" id="lotteryTime">--</div>
-      </div>
+      <div><div class="text-xs text-gray-400">第 <span id="lotteryPeriod" class="text-[#00ffea] font-bold">--</span> 期</div><div class="text-[10px] text-gray-500 mt-0.5" id="lotteryTime">--</div></div>
       <div class="text-[10px] text-gray-500" id="lastRefreshTime">上次刷新：--</div>
     </div>
     <div id="lotteryBalls" class="result-balls-row min-h-[88px]"></div>
-    <button id="refreshLotteryBtn" class="refresh-btn-orange w-full justify-center mt-3">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-      刷新开奖
-    </button>
+    <button id="refreshLotteryBtn" class="refresh-btn-orange w-full justify-center mt-3"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>刷新开奖</button>
   </div>
 
-  <!-- 输入区 -->
   <div class="bg-[#1a1a2a] rounded-2xl p-3 border border-[#00ffea]/20 mb-3">
-    <div class="flex justify-between items-center mb-2">
-      <span class="text-xs text-gray-400">输入号码或生肖（空格分隔）</span>
-      <span class="text-xs text-[#00ffea]">有效: <span id="charCount">0</span><span id="numberWarn" class="hidden text-amber-400 ml-1">⚠️ 已截断至5000个</span></span>
-    </div>
+    <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400">输入号码或生肖（空格分隔）</span><span class="text-xs text-[#00ffea]">有效: <span id="charCount">0</span><span id="numberWarn" class="hidden text-amber-400 ml-1">⚠️ 已截断至5000个</span></span></div>
     <textarea id="numbers" rows="3" class="w-full bg-[#0f0f1a] border border-[#00ffea]/20 rounded-xl p-3 text-[#00ffea] font-mono text-sm focus:outline-none focus:border-[#00ffea]/60 resize-none" placeholder="例如：龙蛇马 12 25 36 8 17 29 41 5 19 33 47"></textarea>
-    <div class="flex gap-2 mt-2">
-      <button id="exampleBtn" class="flex-1 py-2 bg-[#00ffea]/10 text-[#00ffea] rounded-xl text-sm border border-[#00ffea]/30 hover:bg-[#00ffea]/20 transition">示例</button>
-      <button id="clearBtn" class="flex-1 py-2 bg-[#ff0055]/10 text-[#ff0055] rounded-xl text-sm border border-[#ff0055]/30 hover:bg-[#ff0055]/20 transition">清除</button>
-      <button id="copyResultBtn" class="flex-1 py-2 bg-[#1a1a2a] text-gray-300 rounded-xl text-sm border border-gray-700 hover:bg-gray-800 transition">复制结果</button>
-    </div>
+    <div class="flex gap-2 mt-2"><button id="exampleBtn" class="flex-1 py-2 bg-[#00ffea]/10 text-[#00ffea] rounded-xl text-sm border border-[#00ffea]/30 hover:bg-[#00ffea]/20 transition">示例</button><button id="clearBtn" class="flex-1 py-2 bg-[#ff0055]/10 text-[#ff0055] rounded-xl text-sm border border-[#ff0055]/30 hover:bg-[#ff0055]/20 transition">清除</button><button id="copyResultBtn" class="flex-1 py-2 bg-[#1a1a2a] text-gray-300 rounded-xl text-sm border border-gray-700 hover:bg-gray-800 transition">复制结果</button></div>
   </div>
 
-  <!-- 结果区 -->
-  <div id="result" class="bg-[#1a1a2a] rounded-2xl p-3 border border-[#00ffea]/20 min-h-[200px]">
-    <div class="text-center py-8 text-gray-500 text-sm">输入号码后自动分析...</div>
-  </div>
-
+  <div id="result" class="bg-[#1a1a2a] rounded-2xl p-3 border border-[#00ffea]/20 min-h-[200px]"><div class="text-center py-8 text-gray-500 text-sm">输入号码后自动分析...</div></div>
 </div>
 
-<!-- Toast -->
-<div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#1a1a2a] text-[#00ffea] px-4 py-2 rounded-xl border border-[#00ffea]/40 text-sm z-[200] translate-y-20 opacity-0 transition-all duration-300 pointer-events-none whitespace-nowrap">
-  提示信息
-</div>
+<div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#1a1a2a] text-[#00ffea] px-4 py-2 rounded-xl border border-[#00ffea]/40 text-sm z-[200] translate-y-20 opacity-0 transition-all duration-300 pointer-events-none whitespace-nowrap">提示信息</div>
 
-<!-- 底部导航 -->
 <nav class="bottom-nav">
-  <button class="nav-item" data-drawer="shama">杀码</button>
-  <button class="nav-item" data-drawer="shengxiao">生肖</button>
-  <button class="nav-item" data-drawer="haomatou">头数</button>
-  <button class="nav-item" data-drawer="weishu">尾数</button>
-  <button class="nav-item" data-drawer="shuduan">数段</button>
-  <button class="nav-item" data-drawer="bose">波色</button>
-  <button class="nav-item" data-drawer="wuxing">五行</button>
-  <button class="nav-item" data-drawer="bandanshuang">半单双</button>
-  <button class="nav-item" data-drawer="heshu">合数</button>
-  <button class="nav-item" data-drawer="live">直播</button>
-  <button class="nav-item" data-drawer="history">历史</button>
-  <button class="nav-item nav-clear" data-drawer="selectnone">清空</button>
+  <button class="nav-item" data-drawer="shama">杀码</button><button class="nav-item" data-drawer="shengxiao">生肖</button><button class="nav-item" data-drawer="haomatou">头数</button><button class="nav-item" data-drawer="weishu">尾数</button><button class="nav-item" data-drawer="shuduan">数段</button><button class="nav-item" data-drawer="bose">波色</button><button class="nav-item" data-drawer="wuxing">五行</button><button class="nav-item" data-drawer="bandanshuang">半单双</button><button class="nav-item" data-drawer="heshu">合数</button><button class="nav-item" data-drawer="live">直播</button><button class="nav-item" data-drawer="history">历史</button><button class="nav-item nav-clear" data-drawer="selectnone">清空</button>
 </nav>
 
-<!-- 抽屉 -->
 <div id="drawer-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden opacity-0 transition-opacity duration-300"></div>
 <div id="drawer-container" class="drawer-mobile fixed bottom-0 left-0 right-0 bg-[#0f0f1a] rounded-t-3xl border-t border-[#00ffea]/40 z-[210] max-h-[80vh] overflow-y-auto">
-  <div class="sticky top-0 bg-[#0f0f1a] z-10 px-4 py-3 border-b border-[#00ffea]/20 flex justify-between items-center">
-    <h3 id="drawer-title" class="text-[#00ffea] font-bold">筛选器</h3>
-    <button id="drawer-close" class="text-gray-400 hover:text-white p-1">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
-  </div>
+  <div class="sticky top-0 bg-[#0f0f1a] z-10 px-4 py-3 border-b border-[#00ffea]/20 flex justify-between items-center"><h3 id="drawer-title" class="text-[#00ffea] font-bold">筛选器</h3><button id="drawer-close" class="text-gray-400 hover:text-white p-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
   <div id="drawer-content" class="p-4 pb-8"></div>
 </div>
 
+<script src="data.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
