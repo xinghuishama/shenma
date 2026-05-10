@@ -903,9 +903,68 @@
       if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
     }
   }
+======================== 水泡粒子系统 ========================
+  function initParticles() {
+    const canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const particles = [];
+    const MAX_PARTICLES = 60;
+    const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
 
-  // 粒子效果（保持不变）
-  function initParticles() { /* 原实现，略 */ }
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    function createParticle() {
+      return {
+        x: Math.random() * width,
+        y: height + Math.random() * 20,
+        r: Math.random() * 2.5 + 0.5,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        speed: Math.random() * 0.8 + 0.3,
+        sway: Math.random() * 0.4 - 0.2,
+        swayOffset: Math.random() * Math.PI * 2,
+        alpha: Math.random() * 0.4 + 0.1,
+        life: Math.random() * 200 + 150
+      };
+    }
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      const p = createParticle();
+      p.y = Math.random() * height;
+      particles.push(p);
+    }
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y -= p.speed;
+        p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
+        p.life--;
+        if (p.life <= 0 || p.y < -10) {
+          particles[i] = createParticle();
+          continue;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha * (p.life < 50 ? p.life / 50 : 1);
+        ctx.fill();
+        // 水泡高光
+        ctx.beginPath();
+        ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(animate);
+    }
+    resize();
+    animate();
+    window.addEventListener('resize', resize);
+  }
+
 
   // ---------- 初始化入口 ----------
   function init() {
