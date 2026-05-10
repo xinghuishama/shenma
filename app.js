@@ -1162,11 +1162,12 @@
         e.stopPropagation();
         const drawer = btn.dataset.drawer;
         if (drawer === 'selectnone') {
-          // 只清空输入框，不清空筛选（用户要求）
-          if (DOM.numbers) DOM.numbers.value = '';
-          runAnalysis();
+          // 底部导航"清空"按钮：重置所有筛选条件（不清空输入框）
+          clearAllFilters();
+          const killInput = document.getElementById('kill-input');
+          if (killInput) killInput.value = '';
           DrawerSystem.close();
-          showToast('已清空输入');
+          showToast('已重置所有筛选');
         } else {
           DrawerSystem.open(drawer);
         }
