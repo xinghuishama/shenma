@@ -252,15 +252,15 @@ body {
   position: relative;
 }
 .result-ball {
-  width: 49px;
-  height: 63px;
+  width: 44px;
+  height: 58px;
   border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   padding-top: 10px;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   text-shadow: 0 2px 5px rgba(0,0,0,0.4);
@@ -305,7 +305,7 @@ body {
     linear-gradient(180deg, #5599ff 0%, #2244cc 45%, #112288 100%);
 }
 .result-plus-sign {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 400;
   color: #fff;
   margin: 0 1px;
@@ -318,8 +318,8 @@ body {
   bottom: 5px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0,0,0,0.9);
   white-space: nowrap;
