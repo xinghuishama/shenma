@@ -252,8 +252,8 @@ body {
   position: relative;
 }
 .result-ball {
-  width: 56px;
-  height: 72px;
+  width: 49px;
+  height: 63px;
   border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
   display: flex;
   flex-direction: column;
