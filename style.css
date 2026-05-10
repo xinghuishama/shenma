@@ -351,7 +351,7 @@ body {
   .result-ball { width: 38px; height: 50px; font-size: 16px; padding-top: 6px; }
   .result-balls-row { gap: 3px; }
   .result-plus-sign { font-size: 16px; padding-bottom: 6px; }
-  .result-ball-meta { font-size: 9px; bottom: 3px; }
+  .result-ball-meta { font-size: 9px; bottom: 4px; }
 }
 
 /* ======================== 历史记录卡片（底部抽屉） ======================== */
@@ -359,7 +359,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 36px;
+  min-width: 38px;
   border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -428,8 +428,8 @@ body {
 
 /* 历史记录小屏适配 */
 @media (max-width: 420px) {
-  .history-ball-card { min-width: 34px; }
-  .history-ball-number { font-size: 14px; padding: 3px 1px; }
+  .history-ball-card { min-width: 36px; }
+  .history-ball-number { font-size: 15px; padding: 3px 1px; }
   .history-ball-tag { font-size: 9px; padding: 1px; }
   .history-plus-sign { font-size: 14px; padding: 0 1px; }
   .history-balls-row { gap: 2px; }
