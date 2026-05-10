@@ -2,7 +2,7 @@
 (function() {
   "use strict";
 
-  // ---------- 内置 fallback 数据 ----------
+  // 内置 fallback 数据
   const FALLBACK_DATA = (function() {
     const SHENGXIAO_FB = {
       鼠:[7,19,31,43],牛:[6,18,30,42],虎:[5,17,29,41],
@@ -48,20 +48,16 @@
   let SHENGXIAO = FALLBACK_DATA.SHENGXIAO;
   let numProps = FALLBACK_DATA.numProps;
 
-  // 尝试加载主 data.js
   try {
     importScripts('data.js');
     if (typeof APP_DATA !== 'undefined' && APP_DATA.SHENGXIAO && APP_DATA.numProps) {
       SHENGXIAO = APP_DATA.SHENGXIAO;
       numProps = APP_DATA.numProps;
     }
-  } catch (e) {
-    // 使用 fallback，控制台静默
-  }
+  } catch (e) { /* 使用 fallback */ }
 
   const MAX_NUMBERS = 5000;
 
-  // ---------- 解析输入（解析生肖和数字）----------
   function parseInputWorker(input) {
     if (!input || !input.trim()) return [];
     let cleaned = input.replace(/《.*?》/g, ' ')
@@ -69,7 +65,6 @@
                        .replace(/([鼠牛虎兔龙蛇马羊猴鸡狗猪])/g, ' $1 ');
     const tokens = cleaned.split(/\s+/).filter(t => t.length > 0);
     if (!tokens.length) return [];
-
     const results = [];
     for (const token of tokens) {
       if (SHENGXIAO[token]) {
@@ -82,9 +77,7 @@
     return results.length > MAX_NUMBERS ? results.slice(0, MAX_NUMBERS) : results;
   }
 
-  // ---------- 条件函数缓存 ----------
-  const conditionCache = new Map(); // 键：条件字符串，值：匹配函数
-
+  const conditionCache = new Map();
   function buildMatchFunc(cond) {
     if (conditionCache.has(cond)) return conditionCache.get(cond);
     let fn;
@@ -123,7 +116,6 @@
     return fn;
   }
 
-  // ---------- 命中次数计算 ----------
   function computeHitCounts(killNums, filters) {
     const hits = new Uint8Array(50);
     const killSet = new Set(killNums);
@@ -138,7 +130,6 @@
     return hits;
   }
 
-  // ---------- 主消息处理 ----------
   self.onmessage = function(e) {
     const { input = '', killNums = [], filters = [] } = e.data;
     const nums = parseInputWorker(input);
@@ -163,7 +154,7 @@
       adjustedTotal,
       unique,
       hitCounts: Array.from(hitCounts),
-      inputNums: nums   // 用于调试，主线程未使用但保留
+      inputNums: nums
     });
   };
 })();

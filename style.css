@@ -1,4 +1,3 @@
-/* ======================== 全局重置与主题背景 ======================== */
 *{box-sizing:border-box; -webkit-tap-highlight-color: transparent; margin:0; padding:0;}
 body {
   font-family: 'Orbitron', system-ui, -apple-system, sans-serif;
@@ -10,8 +9,6 @@ body {
   touch-action: manipulation;
   color: #e0e0e0;
 }
-
-/* 机甲网格背景 */
 .mech-grid::before {
   content: '';
   position: fixed;
@@ -22,8 +19,6 @@ body {
   pointer-events: none;
   z-index: 0;
 }
-
-/* ======================== 3D 号码球（分析结果区） ======================== */
 .ball-3d {
   position: relative;
   width: 36px;
@@ -58,8 +53,6 @@ body {
   pointer-events: none;
 }
 .ball-3d:active { transform: scale(0.92); }
-
-/* 红球3D */
 .ball-red {
   background:
     radial-gradient(circle at 28% 20%, rgba(255,255,255,0.35) 0%, transparent 20%),
@@ -67,7 +60,6 @@ body {
     radial-gradient(circle at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 55%),
     linear-gradient(165deg, #ff3333 0%, #cc0000 60%, #990000 100%);
 }
-/* 绿球3D */
 .ball-green {
   background:
     radial-gradient(circle at 28% 20%, rgba(255,255,255,0.35) 0%, transparent 20%),
@@ -75,7 +67,6 @@ body {
     radial-gradient(circle at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 55%),
     linear-gradient(165deg, #33cc33 0%, #118811 60%, #005500 100%);
 }
-/* 蓝球3D — 渐变方向与红绿一致 */
 .ball-blue {
   background:
     radial-gradient(circle at 28% 20%, rgba(255,255,255,0.35) 0%, transparent 20%),
@@ -83,11 +74,7 @@ body {
     radial-gradient(circle at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 55%),
     linear-gradient(165deg, #4488ff 0%, #2244cc 60%, #112288 100%);
 }
-
-/* 已被命中（斩杀）的号码变为灰色 */
 .ball-gray { background: #666 !important; box-shadow: 0 0 4px rgba(0,0,0,0.5); filter: none !important; }
-
-/* 命中次数角标 */
 .hit-mark {
   position: absolute;
   bottom: -2px;
@@ -102,7 +89,6 @@ body {
   pointer-events: none;
   line-height: 1;
 }
-/* 杀码专属红叉角标 */
 .hit-mark.cross {
   color: #ff3333;
   font-size: 14px;
@@ -110,14 +96,11 @@ body {
   right: -1px;
   text-shadow: 0 0 2px rgba(255,255,255,0.5), 0 0 4px rgba(0,0,0,0.8);
 }
-
-/* 分析结果区小球尺寸微调 */
 #result .ball-3d { width: 34px; height: 34px; font-size: 12px; }
 #result .ball-3d::after { width: 22%; height: 12%; top: 10%; left: 12%; }
 #result .ball-3d .hit-mark { font-size: 9px; bottom: -3px; right: -2px; }
 #result .ball-3d .hit-mark.cross { font-size: 12px; bottom: -5px; right: -2px; }
 
-/* 独苗高亮脉冲动画 */
 @keyframes flashPulse {
   0%, 100% { opacity: 1; filter: brightness(1) saturate(1); transform: scale(1); }
   50% { opacity: 0.85; filter: brightness(1.3) saturate(1.2); transform: scale(1.12); }
@@ -127,8 +110,6 @@ body {
   box-shadow: 0 0 20px currentColor, 0 0 40px currentColor !important;
   z-index: 10;
 }
-
-/* 斩杀线（平均频次分割线） */
 .kill-line {
   position: relative;
   height: 2px;
@@ -137,16 +118,12 @@ body {
   border-radius: 1px;
   opacity: 0.6;
 }
-
-/* ======================== 移动端抽屉 ======================== */
 .drawer-mobile {
   transform: translateY(100%);
   transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   will-change: transform;
 }
 .drawer-mobile.open { transform: translateY(0); }
-
-/* 底部导航栏 */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
   background: rgba(10, 10, 18, 0.92); backdrop-filter: blur(12px);
@@ -181,8 +158,6 @@ body {
   background: rgba(255, 0, 85, 0.15);
   color: #ff0055;
 }
-
-/* 筛选器选中态高亮 */
 .filter-checkbox:checked + .filter-label {
   background: linear-gradient(135deg, rgba(0,255,234,0.9) 0%, rgba(0,102,255,0.9) 100%) !important;
   color: #000 !important;
@@ -196,12 +171,8 @@ body {
   transition: all 0.15s;
   border: 1px solid rgba(0,255,234,0.15);
 }
-
-/* 隐藏滚动条 */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* 开奖卡片容器 */
 .lottery-card {
   background: rgba(30, 35, 50, 0.6);
   border-radius: 20px;
@@ -209,8 +180,6 @@ body {
   border: 1px solid rgba(100, 120, 150, 0.25);
   backdrop-filter: blur(10px);
 }
-
-/* 刷新按钮 */
 .refresh-btn-orange {
   background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
   color: #1a1a2e;
@@ -228,16 +197,12 @@ body {
   transition: transform 0.1s;
 }
 .refresh-btn-orange:active { transform: scale(0.96); }
-
-/* 五行按钮固定宽度 */
 .wuxing-btn-fixed {
   width: 2.5rem !important;
   min-width: 2.5rem !important;
   flex: none !important;
   text-align: center;
 }
-
-/* ======================== 真实开奖风格蛋形球（顶部开奖区） ======================== */
 .result-balls-row {
   display: flex;
   align-items: center;
@@ -274,7 +239,6 @@ body {
   opacity: 0;
   transform: scale(0);
 }
-/* 蛋形球顶部高光 */
 .result-ball::after {
   content: '';
   position: absolute;
@@ -286,19 +250,16 @@ body {
   border-radius: 50%;
   pointer-events: none;
 }
-/* 红球蛋形 */
 .result-ball-red {
   background:
     radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
     linear-gradient(180deg, #ff5555 0%, #dd1111 45%, #aa0000 100%);
 }
-/* 绿球蛋形 */
 .result-ball-green {
   background:
     radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
     linear-gradient(180deg, #44dd44 0%, #229922 45%, #116611 100%);
 }
-/* 蓝球蛋形 */
 .result-ball-blue {
   background:
     radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
@@ -312,7 +273,6 @@ body {
   align-self: center;
   padding-bottom: 12px;
 }
-/* 球内底部标签 */
 .result-ball-meta {
   position: absolute;
   bottom: 5px;
@@ -325,22 +285,17 @@ body {
   white-space: nowrap;
   letter-spacing: 0.2px;
 }
-/* 五行文字颜色 */
 .wx-gold { color: #FFD700; }
 .wx-wood { color: #32CD32; }
 .wx-water { color: #00BFFF; }
 .wx-fire { color: #FF4444; }
 .wx-earth { color: #CD853F; }
-
-/* 大球弹出动画 */
 @keyframes ballAppear {
   0% { transform: scale(0) rotate(-180deg); opacity: 0; }
   60% { transform: scale(1.15) rotate(10deg); opacity: 1; }
   80% { transform: scale(0.95) rotate(-5deg); }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
-
-/* 蛋形球小屏适配 */
 @media (max-width: 420px) {
   .result-ball { width: 44px; height: 58px; font-size: 18px; padding-top: 8px; }
   .result-balls-row { gap: 5px; }
@@ -353,8 +308,6 @@ body {
   .result-plus-sign { font-size: 16px; padding-bottom: 6px; }
   .result-ball-meta { font-size: 9px; bottom: 4px; }
 }
-
-/* ======================== 历史记录卡片（底部抽屉） ======================== */
 .history-ball-card {
   display: flex;
   flex-direction: column;
@@ -425,8 +378,6 @@ body {
   max-height: 50vh;
   overflow-y: auto;
 }
-
-/* 历史记录小屏适配 */
 @media (max-width: 420px) {
   .history-ball-card { min-width: 36px; }
   .history-ball-number { font-size: 15px; padding: 3px 1px; }
@@ -436,8 +387,6 @@ body {
   .history-item { padding: 8px 6px; }
   .history-item-header { font-size: 11px; margin-bottom: 6px; }
 }
-
-/* ======================== 独苗飞入动画 ======================== */
 .flying-unique-ball {
   position: fixed;
   width: 44px;
@@ -475,20 +424,6 @@ body {
   75% { transform: scale(1.08) rotate(-2deg); }
   100% { transform: scale(1) rotate(0); }
 }
-
-/* 0次统计区样式 */
-.zero-count-section {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed rgba(0,255,234,0.15);
-}
-.zero-count-label {
-  font-size: 11px;
-  color: #ff6b6b;
-  margin-bottom: 4px;
-  font-weight: 600;
-}
-/* 0次统计区优化 */
 .zero-count-section {
   margin-top: 10px;
   padding-top: 8px;
