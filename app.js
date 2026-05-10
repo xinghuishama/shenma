@@ -363,7 +363,7 @@
       }
 
       // 0次统计：当不重复数字少于49个时
-      if (unique < 49) {
+      if (unique < 49 && adjustedTotal > 0) {
         const zeroNums = [];
         for (let n = 1; n <= 49; n++) {
           if (adjustedCount[n] === 0) zeroNums.push(n);
