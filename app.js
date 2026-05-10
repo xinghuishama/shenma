@@ -21,7 +21,7 @@
   function cacheDOM() {
     const ids = ['numbers','result','charCount','numberWarn','exampleBtn','clearBtn','copyResultBtn',
                  'lotteryPeriod','lotteryTime','lastRefreshTime','lotteryBalls','refreshLotteryBtn',
-                 'drawerOverlay','drawerContainer','drawerTitle','drawerContent','drawerClose','toast'];
+                 'drawer-overlay','drawer-container','drawer-title','drawer-content','drawer-close','toast'];
     for (const id of ids) {
       DOM[id.replace(/-/g, '_')] = document.getElementById(id);
     }
