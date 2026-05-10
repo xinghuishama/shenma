@@ -63,24 +63,24 @@
 </div>
 
 <!-- 底部导航 -->
-<nav class="bottom-nav flex justify-around items-center">
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="shama">杀码</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="shengxiao">生肖</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="haomatou">头数</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="weishu">尾数</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="shuduan">数段</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="bose">波色</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="wuxing">五行</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="bandanshuang">半单双</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="heshu">合数</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="live">直播</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#1a1a2a] text-gray-400 text-xs" data-drawer="history">历史</button>
-  <button class="nav-item flex flex-col items-center gap-0.5 p-2 rounded-xl bg-[#ff0055]/20 text-[#ff0055] text-xs" data-drawer="selectnone">清空</button>
+<nav class="bottom-nav">
+  <button class="nav-item" data-drawer="shama">杀码</button>
+  <button class="nav-item" data-drawer="shengxiao">生肖</button>
+  <button class="nav-item" data-drawer="haomatou">头数</button>
+  <button class="nav-item" data-drawer="weishu">尾数</button>
+  <button class="nav-item" data-drawer="shuduan">数段</button>
+  <button class="nav-item" data-drawer="bose">波色</button>
+  <button class="nav-item" data-drawer="wuxing">五行</button>
+  <button class="nav-item" data-drawer="bandanshuang">半单双</button>
+  <button class="nav-item" data-drawer="heshu">合数</button>
+  <button class="nav-item" data-drawer="live">直播</button>
+  <button class="nav-item" data-drawer="history">历史</button>
+  <button class="nav-item nav-clear" data-drawer="selectnone">清空</button>
 </nav>
 
 <!-- 抽屉 -->
-<div id="drawer-overlay" class="fixed inset-0 bg-black/60 z-[60] hidden opacity-0 transition-opacity duration-300"></div>
-<div id="drawer-container" class="drawer-mobile fixed bottom-0 left-0 right-0 bg-[#0f0f1a] rounded-t-3xl border-t border-[#00ffea]/40 z-[70] max-h-[80vh] overflow-y-auto">
+<div id="drawer-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden opacity-0 transition-opacity duration-300"></div>
+<div id="drawer-container" class="drawer-mobile fixed bottom-0 left-0 right-0 bg-[#0f0f1a] rounded-t-3xl border-t border-[#00ffea]/40 z-[210] max-h-[80vh] overflow-y-auto">
   <div class="sticky top-0 bg-[#0f0f1a] z-10 px-4 py-3 border-b border-[#00ffea]/20 flex justify-between items-center">
     <h3 id="drawer-title" class="text-[#00ffea] font-bold">筛选器</h3>
     <button id="drawer-close" class="text-gray-400 hover:text-white p-1">

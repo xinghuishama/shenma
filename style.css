@@ -149,30 +149,38 @@ body {
 
 /* 底部导航栏 */
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: rgba(10, 10, 18, 0.92);
-  backdrop-filter: blur(12px);
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(10, 10, 18, 0.92); backdrop-filter: blur(12px);
   border-top: 1px solid rgba(0,255,234,0.3);
-  padding: 6px 4px;
+  padding: 6px 8px;
   padding-bottom: max(6px, env(safe-area-inset-bottom));
   display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 2px;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.bottom-nav::-webkit-scrollbar { display: none; }
 .bottom-nav .nav-item {
   transition: all 0.2s;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   border: none;
-  background: transparent;
-  min-width: 36px;
+  background: #1a1a2a;
+  color: #9ca3af;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.bottom-nav .nav-item.nav-clear {
+  background: rgba(255, 0, 85, 0.15);
+  color: #ff0055;
 }
 
 /* 筛选器选中态高亮 */
