@@ -9,6 +9,10 @@ body {
   touch-action: manipulation;
   color: #e0e0e0;
 }
+/* 全局文字阴影，保证在粒子上方清晰 */
+body, .relative.z-10, .lottery-card, #result, .bottom-nav .nav-item, .history-item-header {
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+}
 .mech-grid::before {
   content: '';
   position: fixed;
@@ -19,6 +23,63 @@ body {
   pointer-events: none;
   z-index: 0;
 }
+/* 粒子画布位于网格之上、内容之下 */
+#particle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ---------- 全透明核心区域 ---------- */
+/* 开奖区完全透明，移除模糊效果 */
+.lottery-card {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border-radius: 20px;
+  padding: 14px;
+  border: 1px solid rgba(100, 120, 150, 0.25);
+}
+/* 分析结果区全透明 */
+#result {
+  background: transparent !important;
+  border: 1px solid rgba(0,255,234,0.2);
+  border-radius: 1rem;
+  padding: 0.75rem;
+  min-height: 200px;
+}
+/* 输入框外层容器全透明 */
+.rounded-2xl.p-3.border {
+  background: transparent !important;
+}
+/* 文本输入框半透明背景（保证可读性，同时透视粒子） */
+#numbers {
+  background: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0,255,234,0.3);
+  color: #00ffea;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8);
+}
+#numbers:focus {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: #00ffea;
+}
+/* 结果区内频次卡片保持半透明毛玻璃，增强层次 */
+#result > div {
+  background: rgba(15, 15, 26, 0.45);
+  backdrop-filter: blur(4px);
+  border-radius: 16px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.zero-count-section {
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(2px);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+/* 号码球样式保留原有质感，无背景透明干扰 */
 .ball-3d {
   position: relative;
   width: 36px;
@@ -173,13 +234,6 @@ body {
 }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-.lottery-card {
-  background: transparent;
-  border-radius: 20px;
-  padding: 14px;
-  border: 1px solid rgba(100, 120, 150, 0.25);
-  backdrop-filter: blur(10px);
-}
 .refresh-btn-orange {
   background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
   color: #1a1a2e;
@@ -436,7 +490,4 @@ body {
   font-weight: 600;
   letter-spacing: 0.5px;
 }
-
-/* === 透明化增强 === */
-.relative.z-10 { text-shadow: 0 1px 4px rgba(0,0,0,0.9); }
-#numbers::placeholder { color: rgba(0,255,234,0.4); }
+#numbers::placeholder { color: rgba(0,255,234,0.6); text-shadow: none; }
