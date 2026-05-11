@@ -898,16 +898,18 @@
         y: height + Math.random() * 20,
         r: Math.random() * 2.5 + 0.5,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        speed: Math.random() * 0.5 + 0.2,
+        speed: Math.random() * 0.8 + 0.3,
         sway: Math.random() * 0.4 - 0.2,
         swayOffset: Math.random() * Math.PI * 2,
         alpha: Math.random() * 0.4 + 0.1,
-        life: Math.random() * 400 + 600
+        life: Math.random() * 200 + 150
       };
     }
     for (let i = 0; i < MAX_PARTICLES; i++) {
       const p = createParticle();
       p.y = Math.random() * height;
+      // 根据实际分布位置重新计算飞到顶部的寿命
+      p.life = Math.min((p.y + 80) / p.speed, 3000);
       particles.push(p);
     }
     function animate() {
@@ -917,7 +919,7 @@
         p.y -= p.speed;
         p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
         p.life--;
-        if (p.life <= 0 || p.y < -80) {
+        if (p.life <= 0 || p.y < -10) {
           particles[i] = createParticle();
           continue;
         }
