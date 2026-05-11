@@ -1,4 +1,4 @@
-// ======================== app.js — 主线程核心逻辑 v3.7.1 (完整版，粒子已修复) ========================
+// ======================== app.js — 主线程核心逻辑 v3.7.1 (完整版) ========================
 (function() {
   "use strict";
 
@@ -304,7 +304,7 @@
       htmlParts.push('<div class="text-center py-8 text-amber-400">⚡ 所有号码频次归零，请调整筛选条件 ⚡</div>');
     }
 
-    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-[#1a1a2a] rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
+    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-transparent rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
 
     container.innerHTML = htmlParts.join('');
 
@@ -575,7 +575,7 @@
         const sel = state.selectedFilters.heshu;
         return `<div class="grid grid-cols-4 gap-2">${hes.map(h => `<label><input type="checkbox" class="filter-checkbox hidden" value="${h}" data-drawer="heshu" ${sel.includes(h) ? 'checked' : ''}><span class="filter-label block text-center py-2 bg-[#1a1a2a] rounded-lg text-xs">${h}</span></label>`).join('')}</div>`;
       },
-      live: () => `<div class="flex flex-col" style="height: calc(90vh - 68px); min-height: 480px;"><div class="flex items-center justify-between mb-2 px-1 flex-wrap gap-2"><span class="text-xs text-gray-400">直连视频流播放 · 自动切换备选源</span><a href="https://macaujc.com/open_video2/" target="_blank" rel="noopener noreferrer" class="text-xs bg-[#00ffea]/20 text-[#00ffea] px-3 py-1.5 rounded-lg border border-[#00ffea]/40 hover:bg-[#00ffea]/30 transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>新窗口观看</a></div><div class="flex gap-2 mb-3 flex-wrap" id="live-source-btns"><button data-src-idx="0" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#00ffea] text-black border border-[#00ffea]">源1·API获取</button><button data-src-idx="1" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a1a2a] text-gray-400 border border-[#00ffea]/20">源2·HLS</button><button data-src-idx="2" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a1a2a] text-gray-400 border border-[#00ffea]/20">源3·FLV</button></div><div class="relative flex-1 bg-black rounded-2xl overflow-hidden border border-[#00ffea]/40 shadow-2xl"><video id="live-video" class="w-full h-full" controls autoplay playsinline muted style="background:#000;"></video><div id="live-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-black z-10"><svg class="animate-spin w-8 h-8 text-[#00ffea] mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><span class="text-sm text-gray-400" id="live-status">正在获取直播源...</span></div><div id="live-error" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a12] z-20 p-6 text-center"><svg class="w-12 h-12 text-red-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><p class="text-red-400 font-bold mb-1">直播源加载失败</p><p class="text-xs text-gray-500 mb-4">所有备选源均无法连接</p><a href="https://macaujc.com/open_video2/" target="_blank" rel="noopener noreferrer" class="bg-gradient-to-r from-[#00ffea] to-[#0088ff] text-black font-bold px-6 py-2.5 rounded-xl hover:shadow-[0_0_20px_rgba(0,255,234,0.4)] transition-all flex items-center gap-2 mb-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>macaujc.com 直播</a><a href="https://kj.416121.com/Marksix/Index" target="_blank" rel="noopener noreferrer" class="bg-[#1a1a2a] text-[#00ffea] font-bold px-6 py-2.5 rounded-xl border border-[#00ffea]/30 hover:bg-[#00ffea]/10 transition-all flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>备用直播站</a></div></div></div>`,
+      live: () => `<div class="flex flex-col" style="height: calc(90vh - 68px); min-height: 480px;"><div class="flex items-center justify-between mb-2 px-1 flex-wrap gap-2"><span class="text-xs text-gray-400">直连视频流播放 · 自动切换备选源</span><a href="https://macaujc.com/open_video2/" target="_blank" rel="noopener noreferrer" class="text-xs bg-[#00ffea]/20 text-[#00ffea] px-3 py-1.5 rounded-lg border border-[#00ffea]/40 hover:bg-[#00ffea]/30 transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>新窗口观看</a></div><div class="flex gap-2 mb-3 flex-wrap" id="live-source-btns"><button data-src-idx="0" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#00ffea] text-black border border-[#00ffea]">源1·API获取</button><button data-src-idx="1" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a1a2a] text-gray-400 border border-[#00ffea]/20">源2·HLS</button><button data-src-idx="2" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a1a2a] text-gray-400 border border-[#00ffea]/20">源3·FLV</button></div><div class="relative flex-1 bg-black rounded-2xl overflow-hidden border border-[#00ffea]/40 shadow-2xl"><video id="live-video" class="w-full h-full" controls autoplay playsinline muted style="background:#000;"></video><div id="live-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-black z-10"><svg class="animate-spin w-8 h-8 text-[#00ffea] mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><span class="text-sm text-gray-400" id="live-status">正在获取直播源...</span></div><div id="live-error" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a12] z-20 p-6 text-center"><svg class="w-12 h-12 text-red-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><p class="text-red-400 font-bold mb-1">直播源加载失败</p><p class="text-xs text-gray-500 mb-4">所有备选源均无法连接</p><a href="https://macaujc.com/open_video2/" target="_blank" rel="noopener noreferrer" class="bg-gradient-to-r from-[#00ffea] to-[#0088ff] text-black font-bold px-6 py-2.5 rounded-xl hover:shadow-[0_0_20px_rgba(0,255,234,0.4)] transition-all flex items-center gap-2 mb-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>macaujc.com 直播</a><a href="https://momarksix.org/video" target="_blank" rel="noopener noreferrer" class="bg-[#1a1a2a] text-[#00ffea] font-bold px-6 py-2.5 rounded-xl border border-[#00ffea]/30 hover:bg-[#00ffea]/10 transition-all flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>备用直播站</a></div></div></div>`,
       history: () => {
         let opts = '';
         for (let y = new Date().getFullYear(); y >= 2020; y--) opts += `<option value="${y}">${y}年</option>`;
@@ -879,80 +879,69 @@
     }
   }
 
-  // ---------- 粒子效果（修复：粒子飞至顶端重生，无寿命限制）----------
-// ---------- 粒子效果（修复版：寿命足够长，从底部升起，飞到顶端重生）----------
-function initParticles() {
-  const canvas = document.getElementById('particle-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let width, height;
-  const particles = [];
-  const MAX_PARTICLES = 60;
-  const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
-
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-
-  function createParticle() {
-    return {
-      x: Math.random() * width,
-      y: height + Math.random() * 30,          // 起始于屏幕底部以下
-      r: Math.random() * 2.5 + 0.5,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      speed: Math.random() * 0.8 + 0.3,
-      sway: Math.random() * 0.4 - 0.2,
-      swayOffset: Math.random() * Math.PI * 2,
-      alpha: Math.random() * 0.3 + 0.4,        // 透明度 0.4~0.7，更明显
-      life: Math.random() * 1200 + 800         // 寿命足够飞到屏幕顶部（1080p 屏幕约需 1000 帧）
-    };
-  }
-
-  // 初始化固定数量粒子
-  for (let i = 0; i < MAX_PARTICLES; i++) {
-    particles.push(createParticle());
-  }
-
-  function animate() {
-    // 当 canvas 尺寸为 0 时跳过（避免报错）
-    if (!width || !height) {
-      requestAnimationFrame(animate);
-      return;
+  // ---------- 粒子效果 ----------
+  function initParticles() {
+    const canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const particles = [];
+    const MAX_PARTICLES = 60;
+    const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     }
-    ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      p.y -= p.speed;
-      p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
-      p.life--;
-
-      // 粒子飞出顶部或寿命耗尽 → 重生
-      if (p.life <= 0 || p.y < -20) {
-        particles[i] = createParticle();
-        continue;
+    function createParticle(yOverride) {
+      const speed = Math.random() * 0.5 + 0.2;
+      const y = yOverride !== undefined ? yOverride : height + Math.random() * 20;
+      // 根据当前位置和速度计算刚好飞到顶部（y=-80）所需的帧数
+      // 距离 = y + 80，每帧上升 speed 像素
+      const life = Math.min((y + 80) / speed, 3000); // 上限3000帧（约50秒）防内存泄漏
+      return {
+        x: Math.random() * width,
+        y: y,
+        r: Math.random() * 2.5 + 0.5,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        speed: speed,
+        sway: Math.random() * 0.4 - 0.2,
+        swayOffset: Math.random() * Math.PI * 2,
+        alpha: Math.random() * 0.4 + 0.1,
+        life: life,
+      };
+    }
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      const p = createParticle(Math.random() * height);
+      particles.push(p);
+    }
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y -= p.speed;
+        p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
+        p.life--;
+        if (p.life <= 0 || p.y < -80) {
+          particles[i] = createParticle();
+          continue;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha * (p.life < 50 ? p.life / 50 : 1);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fill();
       }
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = p.alpha;
-      ctx.fill();
-
-      // 高光
-      ctx.beginPath();
-      ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      ctx.fill();
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(animate);
     }
-    ctx.globalAlpha = 1;
-    requestAnimationFrame(animate);
+    resize();
+    animate();
+    window.addEventListener('resize', resize);
   }
-
-  resize();
-  animate();
-  window.addEventListener('resize', resize);
-}
 
   // ---------- 初始化入口 ----------
   function init() {
@@ -998,7 +987,7 @@ function initParticles() {
     runAnalysis();
     initAutoRefresh();
     window.addEventListener('beforeunload', terminateWorker);
-    console.log('✅ 神码再现 v3.7.1 已加载（粒子修复：无限寿命，飞到顶端）');
+    console.log('✅ 神码再现 v3.7.1 已加载（完整版，抽屉已修复）');
   }
 
   document.addEventListener('DOMContentLoaded', init);
