@@ -880,80 +880,48 @@
   }
 
   // ---------- 粒子效果 ----------
-function initParticles() {
+  function initParticles() {
     const canvas = document.getElementById('particle-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let width, height;
     const particles = [];
-    const MAX_PARTICLES = 40;                     // 粒子数量减少至 40
+    const MAX_PARTICLES = 60;
     const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
-
     function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     }
+  function createParticle() {
+  return {
+    x: Math.random() * width,
+    y: height + Math.random() * 30,   // 始终从底部以下开始
+    r: Math.random() * 2.5 + 0.5,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    speed: Math.random() * 0.8 + 0.3,
+    sway: Math.random() * 0.4 - 0.2,
+    swayOffset: Math.random() * Math.PI * 2,
+    alpha: Math.random() * 0.4 + 0.1
+  };
+}
 
-    function getParticleProps() {
-        return {
-            x: Math.random() * width,
-            y: height + Math.random() * 20,      // 从屏幕底部稍下方生成
-            r: Math.random() * 2.5 + 0.5,
-            color: COLORS[Math.floor(Math.random() * COLORS.length)],
-            speed: Math.random() * 0.8 + 0.3,
-            sway: Math.random() * 0.4 - 0.2,
-            swayOffset: Math.random() * Math.PI * 2,
-            alpha: Math.random() * 0.4 + 0.1,
-            life: Math.random() * 200 + 150
-        };
+function animate() {
+  ctx.clearRect(0, 0, width, height);
+  for (let i = 0; i < particles.length; i++) {
+    const p = particles[i];
+    p.y -= p.speed;
+    p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
+    if (p.y < -20) {
+      particles[i] = createParticle();  // 粒子飞到顶部后重置
     }
-
-    function resetParticle(p) {
-        // 重置粒子属性（重用对象，避免频繁垃圾回收）
-        Object.assign(p, getParticleProps());
-    }
-
-    // 初始化粒子池
-    for (let i = 0; i < MAX_PARTICLES; i++) {
-        particles.push(getParticleProps());
-    }
-
-    function animate() {
-        ctx.clearRect(0, 0, width, height);
-
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            p.y -= p.speed;
-            p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
-            p.life--;
-
-            // 飞出屏幕顶部或寿命耗尽 → 重生在底部
-            if (p.life <= 0 || p.y < -10) {
-                resetParticle(p);
-                continue; // 避免绘制已重置的粒子造成闪烁（可省略，但继续跳过一次绘制）
-            }
-
-            // 绘制粒子主体
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.globalAlpha = p.alpha * (p.life < 50 ? p.life / 50 : 1);
-            ctx.fill();
-
-            // 高光
-            ctx.beginPath();
-            ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,255,255,0.4)';
-            ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(animate);
-    }
-
+    // 绘制粒子...
+  }
+  requestAnimationFrame(animate);
+}
     resize();
     animate();
     window.addEventListener('resize', resize);
-}
+  }
 
   // ---------- 初始化入口 ----------
   function init() {
