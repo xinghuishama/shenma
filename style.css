@@ -174,7 +174,7 @@ body {
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .lottery-card {
-  background: rgba(30, 35, 50, 0.6);
+  background: rgba(30, 35, 50, 0.1);
   border-radius: 20px;
   padding: 14px;
   border: 1px solid rgba(100, 120, 150, 0.25);

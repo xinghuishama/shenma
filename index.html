@@ -31,11 +31,11 @@
 
   <div class="bg-[#1a1a2a] rounded-2xl p-3 border border-[#00ffea]/20 mb-3">
     <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400">输入号码或生肖（空格分隔）</span><span class="text-xs text-[#00ffea]">有效: <span id="charCount">0</span><span id="numberWarn" class="hidden text-amber-400 ml-1">⚠️ 已截断至5000个</span></span></div>
-    <textarea id="numbers" rows="3" class="w-full bg-[#0f0f1a] border border-[#00ffea]/20 rounded-xl p-3 text-[#00ffea] font-mono text-sm focus:outline-none focus:border-[#00ffea]/60 resize-none" placeholder="例如：龙蛇马 12 25 36 8 17 29 41 5 19 33 47"></textarea>
+    <textarea id="numbers" rows="3" class="w-full bg-[#0f0f1a]/10 backdrop-blur-sm border border-[#00ffea]/30 rounded-xl p-3 text-[#00ffea] font-mono text-sm focus:outline-none focus:border-[#00ffea]/60 resize-none" placeholder="例如：龙蛇马 12 25 36 8 17 29 41 5 19 33 47"></textarea>
     <div class="flex gap-2 mt-2"><button id="exampleBtn" class="flex-1 py-2 bg-[#00ffea]/10 text-[#00ffea] rounded-xl text-sm border border-[#00ffea]/30 hover:bg-[#00ffea]/20 transition">示例</button><button id="clearBtn" class="flex-1 py-2 bg-[#ff0055]/10 text-[#ff0055] rounded-xl text-sm border border-[#ff0055]/30 hover:bg-[#ff0055]/20 transition">清除</button><button id="copyResultBtn" class="flex-1 py-2 bg-[#1a1a2a] text-gray-300 rounded-xl text-sm border border-gray-700 hover:bg-gray-800 transition">复制结果</button></div>
   </div>
 
-  <div id="result" class="bg-[#1a1a2a] rounded-2xl p-3 border border-[#00ffea]/20 min-h-[200px]"><div class="text-center py-8 text-gray-500 text-sm">输入号码后自动分析...</div></div>
+  <div id="result" class="bg-[#1a1a2a]/10 backdrop-blur-sm rounded-2xl p-3 border border-[#00ffea]/30 min-h-[200px]"><div class="text-center py-8 text-gray-500 text-sm">输入号码后自动分析...</div></div>
 </div>
 
 <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#1a1a2a] text-[#00ffea] px-4 py-2 rounded-xl border border-[#00ffea]/40 text-sm z-[200] translate-y-20 opacity-0 transition-all duration-300 pointer-events-none whitespace-nowrap">提示信息</div>
