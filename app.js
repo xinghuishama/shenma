@@ -304,7 +304,7 @@
       htmlParts.push('<div class="text-center py-8 text-amber-400">⚡ 所有号码频次归零，请调整筛选条件 ⚡</div>');
     }
 
-    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-transparent rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
+    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-[#1a1a2a] rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
 
     container.innerHTML = htmlParts.join('');
 
@@ -892,26 +892,22 @@
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     }
-    function createParticle(yOverride) {
-      const speed = Math.random() * 0.5 + 0.2;
-      const y = yOverride !== undefined ? yOverride : height + Math.random() * 20;
-      // 根据当前位置和速度计算刚好飞到顶部（y=-80）所需的帧数
-      // 距离 = y + 80，每帧上升 speed 像素
-      const life = Math.min((y + 80) / speed, 3000); // 上限3000帧（约50秒）防内存泄漏
+    function createParticle() {
       return {
         x: Math.random() * width,
-        y: y,
+        y: height + Math.random() * 20,
         r: Math.random() * 2.5 + 0.5,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        speed: speed,
+        speed: Math.random() * 0.8 + 0.3,
         sway: Math.random() * 0.4 - 0.2,
         swayOffset: Math.random() * Math.PI * 2,
         alpha: Math.random() * 0.4 + 0.1,
-        life: life,
+        life: Math.random() * 200 + 150
       };
     }
     for (let i = 0; i < MAX_PARTICLES; i++) {
-      const p = createParticle(Math.random() * height);
+      const p = createParticle();
+      p.y = Math.random() * height;
       particles.push(p);
     }
     function animate() {
@@ -921,7 +917,7 @@
         p.y -= p.speed;
         p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
         p.life--;
-        if (p.life <= 0 || p.y < -80) {
+        if (p.life <= 0 || p.y < -10) {
           particles[i] = createParticle();
           continue;
         }
