@@ -880,69 +880,79 @@
   }
 
   // ---------- 粒子效果（修复：粒子飞至顶端重生，无寿命限制）----------
-  function initParticles() {
-    const canvas = document.getElementById('particle-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    const particles = [];
-    const MAX_PARTICLES = 60;
-    const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+// ---------- 粒子效果（修复版：寿命足够长，从底部升起，飞到顶端重生）----------
+function initParticles() {
+  const canvas = document.getElementById('particle-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  const particles = [];
+  const MAX_PARTICLES = 60;
+  const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
 
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-
-    // 修改：不再生成 life 属性，始终从底部生成，升至顶端后重置
-    function createParticle() {
-      return {
-        x: Math.random() * width,
-        y: height + Math.random() * 30,     // 起始于屏幕底部以下随机偏移
-        r: Math.random() * 2.5 + 0.5,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        speed: Math.random() * 0.8 + 0.3,
-        sway: Math.random() * 0.4 - 0.2,
-        swayOffset: Math.random() * Math.PI * 2,
-        alpha: Math.random() * 0.4 + 0.1
-      };
-    }
-
-    // 初始化固定数量粒子
-    for (let i = 0; i < MAX_PARTICLES; i++) {
-      particles.push(createParticle());
-    }
-
-    function animate() {
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.y -= p.speed;
-        p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
-        // 当粒子完全离开屏幕顶部时，重置为底部新粒子
-        if (p.y < -20) {
-          particles[i] = createParticle();
-          continue;
-        }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.fill();
-        // 高光
-        ctx.beginPath();
-        ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      requestAnimationFrame(animate);
-    }
-
-    resize();
-    animate();
-    window.addEventListener('resize', resize);
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
   }
+
+  function createParticle() {
+    return {
+      x: Math.random() * width,
+      y: height + Math.random() * 30,          // 起始于屏幕底部以下
+      r: Math.random() * 2.5 + 0.5,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      speed: Math.random() * 0.8 + 0.3,
+      sway: Math.random() * 0.4 - 0.2,
+      swayOffset: Math.random() * Math.PI * 2,
+      alpha: Math.random() * 0.3 + 0.4,        // 透明度 0.4~0.7，更明显
+      life: Math.random() * 1200 + 800         // 寿命足够飞到屏幕顶部（1080p 屏幕约需 1000 帧）
+    };
+  }
+
+  // 初始化固定数量粒子
+  for (let i = 0; i < MAX_PARTICLES; i++) {
+    particles.push(createParticle());
+  }
+
+  function animate() {
+    // 当 canvas 尺寸为 0 时跳过（避免报错）
+    if (!width || !height) {
+      requestAnimationFrame(animate);
+      return;
+    }
+    ctx.clearRect(0, 0, width, height);
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.y -= p.speed;
+      p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
+      p.life--;
+
+      // 粒子飞出顶部或寿命耗尽 → 重生
+      if (p.life <= 0 || p.y < -20) {
+        particles[i] = createParticle();
+        continue;
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+
+      // 高光
+      ctx.beginPath();
+      ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  animate();
+  window.addEventListener('resize', resize);
+}
 
   // ---------- 初始化入口 ----------
   function init() {
