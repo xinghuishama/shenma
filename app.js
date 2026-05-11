@@ -304,7 +304,7 @@
       htmlParts.push('<div class="text-center py-8 text-amber-400">⚡ 所有号码频次归零，请调整筛选条件 ⚡</div>');
     }
 
-    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-transparent rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
+    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-[#1a1a2a] rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
 
     container.innerHTML = htmlParts.join('');
 
@@ -898,11 +898,11 @@
         y: height + Math.random() * 20,
         r: Math.random() * 2.5 + 0.5,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        speed: Math.random() * 0.8 + 0.3,
+        speed: Math.random() * 0.5 + 0.2,
         sway: Math.random() * 0.4 - 0.2,
         swayOffset: Math.random() * Math.PI * 2,
         alpha: Math.random() * 0.4 + 0.1,
-        life: Math.random() * 200 + 150
+        life: Math.random() * 400 + 600
       };
     }
     for (let i = 0; i < MAX_PARTICLES; i++) {
@@ -917,7 +917,7 @@
         p.y -= p.speed;
         p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
         p.life--;
-        if (p.life <= 0 || p.y < -10) {
+        if (p.life <= 0 || p.y < -80) {
           particles[i] = createParticle();
           continue;
         }
