@@ -304,7 +304,7 @@
       htmlParts.push('<div class="text-center py-8 text-amber-400">⚡ 所有号码频次归零，请调整筛选条件 ⚡</div>');
     }
 
-    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-[#1a1a2a] rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
+    htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-transparent rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
 
     container.innerHTML = htmlParts.join('');
 
@@ -534,7 +534,7 @@
   const DrawerSystem = {
     current: null,
     templates: {
-      shama: () => `<textarea id="kill-input" rows="3" class="w-fullbg-transparent border border-[#00ffea]/30 rounded-lg p-3 text-[#00ffea] font-mono text-sm">${state.killNums.join(' ')}</textarea>`,
+      shama: () => `<textarea id="kill-input" rows="3" class="w-full bg-[#1a1a2a] border border-[#00ffea]/30 rounded-lg p-3 text-[#00ffea] font-mono text-sm">${state.killNums.join(' ')}</textarea>`,
       shengxiao: () => {
         const sxs = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
         const sel = state.selectedFilters.shengxiao;
@@ -908,8 +908,6 @@
     for (let i = 0; i < MAX_PARTICLES; i++) {
       const p = createParticle();
       p.y = Math.random() * height;
-      // 根据实际分布位置重新计算飞到顶部的寿命
-      p.life = Math.min((p.y + 80) / p.speed, 3000);
       particles.push(p);
     }
     function animate() {
