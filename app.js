@@ -534,7 +534,7 @@
   const DrawerSystem = {
     current: null,
     templates: {
-      shama: () => `<textarea id="kill-input" rows="3" class="w-full bg-[#1a1a2a] border border-[#00ffea]/30 rounded-lg p-3 text-[#00ffea] font-mono text-sm">${state.killNums.join(' ')}</textarea>`,
+      shama: () => `<textarea id="kill-input" rows="3" class="w-fullbg-transparent border border-[#00ffea]/30 rounded-lg p-3 text-[#00ffea] font-mono text-sm">${state.killNums.join(' ')}</textarea>`,
       shengxiao: () => {
         const sxs = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
         const sel = state.selectedFilters.shengxiao;
