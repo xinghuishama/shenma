@@ -906,8 +906,7 @@
       };
     }
     for (let i = 0; i < MAX_PARTICLES; i++) {
-      const p = createParticle();
-      p.y = Math.random() * height;
+      const p = createParticle(Math.random() * height);
       particles.push(p);
     }
     function animate() {
