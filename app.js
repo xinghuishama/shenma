@@ -1,4 +1,4 @@
-// ======================== app.js — 主线程核心逻辑 v3.7.1 (完整版) ========================
+// ======================== app.js — 主线程核心逻辑 v3.7.2 (性能优化版) ========================
 (function() {
   "use strict";
 
@@ -37,6 +37,7 @@
   };
   let subscribers = [];
   let lastAnalysisResult = null;
+  let isComposing = false; // 中文输入法标记（优化3）
 
   function subscribe(fn) { subscribers.push(fn); }
   function notify() { subscribers.forEach(fn => fn()); }
@@ -182,7 +183,7 @@
     return () => false;
   }
 
-  // ---------- Worker 通信 ----------
+  // ---------- Worker 通信（优化1：零拷贝） ----------
   let analysisWorker = null;
   let debounceTimer = null;
   function initWorker() {
@@ -196,11 +197,15 @@
   function terminateWorker() { if (analysisWorker) { analysisWorker.terminate(); analysisWorker = null; } }
   function onWorkerMessage(e) {
     try {
-      renderResult(e.data.adjustedCount, e.data.adjustedTotal, e.data.unique, e.data.hitCounts);
+      // 零拷贝重建 TypedArray，不触发 GC
+      const adjustedCount = new Uint16Array(e.data.adjustedCount);
+      const hitCounts = new Uint8Array(e.data.hitCounts);
+      renderResult(adjustedCount, e.data.adjustedTotal, e.data.unique, hitCounts);
     } catch (err) { console.error(err); }
   }
   function runAnalysis() {
     initWorker();
+    if (isComposing) return; // 输入法组合中直接跳过（优化3）
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       const input = DOM.numbers ? DOM.numbers.value : '';
@@ -221,7 +226,7 @@
       if (analysisWorker) {
         analysisWorker.postMessage({ input: input, killNums: state.killNums, filters: getFilterSet() });
       }
-    }, 200);
+    }, 120); // Worker 异步不阻塞主线程，可降到 120ms（优化3）
   }
   function onStateChange() { runAnalysis(); }
 
@@ -519,18 +524,25 @@
     if (DOM.lotteryTime) DOM.lotteryTime.textContent = escapeHtml((item.openTime || '--').replace(' ', '\n'));
   }
 
+  // ---------- 自动刷新（优化5：链式调用 + 智能时段） ----------
   function initAutoRefresh() {
-    setInterval(() => {
+    function tick() {
       if (isCurrentDrawComplete) return;
       const now = new Date();
       const totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      const startSec = 21 * 3600 + 33 * 60 + 20;
-      const endSec = 21 * 3600 + 35 * 60;
-      if (document.visibilityState === 'visible' && totalSec >= startSec && totalSec <= endSec) fetchLottery();
-    }, 5000);
+      const startSec = 21 * 3600 + 33 * 60 + 20; // 21:33:20
+      const endSec = 21 * 3600 + 35 * 60;        // 21:35:00
+      if (document.visibilityState === 'visible' && totalSec >= startSec && totalSec <= endSec) {
+        fetchLottery();
+      }
+      // 时间段外延长到 30 秒，减少功耗
+      const delay = (totalSec >= startSec && totalSec <= endSec) ? 5000 : 30000;
+      setTimeout(tick, delay);
+    }
+    setTimeout(tick, 3000); // 首次延迟 3 秒，避免加载瞬间抢资源
   }
 
-  // ---------- 抽屉系统 (修复版) ----------
+  // ---------- 抽屉系统 ----------
   const DrawerSystem = {
     current: null,
     templates: {
@@ -879,79 +891,78 @@
     }
   }
 
- // ---------- 粒子效果（修复版：寿命足够长，从底部升起，飞到顶端重生）----------
-function initParticles() {
-  const canvas = document.getElementById('particle-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let width, height;
-  const particles = [];
-  const MAX_PARTICLES = 60;
-  const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+  // ---------- 粒子效果（优化2：对象池，零GC） ----------
+  function initParticles() {
+    const canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const particles = [];
+    const MAX_PARTICLES = 60;
+    const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
 
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-
-  function createParticle() {
-    return {
-      x: Math.random() * width,
-      y: height + Math.random() * 30,          // 起始于屏幕底部以下
-      r: Math.random() * 2.5 + 0.5,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      speed: Math.random() * 0.8 + 0.3,
-      sway: Math.random() * 0.4 - 0.2,
-      swayOffset: Math.random() * Math.PI * 2,
-      alpha: Math.random() * 0.3 + 0.4,        // 透明度 0.4~0.7，更明显
-      life: Math.random() * 800 + 600         // 寿命足够飞到屏幕顶部（1080p 屏幕约需 1000 帧）
-    };
-  }
-
-  // 初始化固定数量粒子
-  for (let i = 0; i < MAX_PARTICLES; i++) {
-    particles.push(createParticle());
-  }
-
-  function animate() {
-    // 当 canvas 尺寸为 0 时跳过（避免报错）
-    if (!width || !height) {
-      requestAnimationFrame(animate);
-      return;
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     }
-    ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      p.y -= p.speed;
-      p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
-      p.life--;
 
-      // 粒子飞出顶部或寿命耗尽 → 重生
-      if (p.life <= 0 || p.y < -20) {
-        particles[i] = createParticle();
-        continue;
+    // 对象重置（复用，不新建）
+    function resetParticle(p) {
+      p.x = Math.random() * width;
+      p.y = height + Math.random() * 30;
+      p.r = Math.random() * 2.5 + 0.5;
+      p.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      p.speed = Math.random() * 0.8 + 0.3;
+      p.sway = Math.random() * 0.4 - 0.2;
+      p.swayOffset = Math.random() * Math.PI * 2;
+      p.alpha = Math.random() * 0.3 + 0.4;
+      p.life = Math.random() * 800 + 600;
+      return p;
+    }
+
+    // 初始化对象池
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      particles.push(resetParticle({}));
+    }
+
+    function animate() {
+      if (!width || !height) {
+        requestAnimationFrame(animate);
+        return;
       }
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y -= p.speed;
+        p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
+        p.life--;
 
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = p.alpha;
-      ctx.fill();
+        // 粒子飞出顶部或寿命耗尽 → 重生（复用对象，无 GC）
+        if (p.life <= 0 || p.y < -20) {
+          resetParticle(p);
+          continue;
+        }
 
-      // 高光
-      ctx.beginPath();
-      ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+
+        // 高光
+        ctx.beginPath();
+        ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(animate);
     }
-    ctx.globalAlpha = 1;
-    requestAnimationFrame(animate);
-  }
 
-  resize();
-  animate();
-  window.addEventListener('resize', resize);
-}
+    resize();
+    animate();
+    window.addEventListener('resize', resize);
+  }
 
   // ---------- 初始化入口 ----------
   function init() {
@@ -966,7 +977,14 @@ function initParticles() {
     if (DOM.exampleBtn) DOM.exampleBtn.addEventListener('click', () => { if (DOM.numbers) DOM.numbers.value = '龙蛇马 12 25 36 8 17 29 41 5 19 33 47'; runAnalysis(); });
     if (DOM.clearBtn) DOM.clearBtn.addEventListener('click', () => { if (DOM.numbers) DOM.numbers.value = ''; runAnalysis(); showToast('已清空输入'); });
     if (DOM.copyResultBtn) DOM.copyResultBtn.addEventListener('click', copyResult);
-    if (DOM.numbers) DOM.numbers.addEventListener('input', runAnalysis);
+    
+    // 优化3：输入法感知 + 自适应防抖
+    if (DOM.numbers) {
+      DOM.numbers.addEventListener('input', runAnalysis);
+      DOM.numbers.addEventListener('compositionstart', () => { isComposing = true; });
+      DOM.numbers.addEventListener('compositionend', () => { isComposing = false; runAnalysis(); });
+    }
+    
     if (DOM.refreshLotteryBtn) DOM.refreshLotteryBtn.addEventListener('click', fetchLottery);
 
     const navItems = document.querySelectorAll('.nav-item');
@@ -997,7 +1015,7 @@ function initParticles() {
     runAnalysis();
     initAutoRefresh();
     window.addEventListener('beforeunload', terminateWorker);
-    console.log('✅ 神码再现 v3.7.1 已加载（完整版，抽屉已修复）');
+    console.log('✅ 神码再现 v3.7.2 已加载（性能优化版：零拷贝Worker + 对象池粒子 + 输入法防抖 + GPU合成层 + 智能刷新）');
   }
 
   document.addEventListener('DOMContentLoaded', init);

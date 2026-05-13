@@ -1,4 +1,4 @@
-// ======================== worker.js — 独立分析引擎 v3.7 ========================
+// ======================== worker.js — 独立分析引擎 v3.7.2 (零拷贝优化版) ========================
 (function() {
   "use strict";
 
@@ -149,12 +149,13 @@
       if (adj > 0) unique++;
     }
 
+    // 优化1：Transferable 零拷贝传输，主线程直接接管 ArrayBuffer 所有权
     self.postMessage({
-      adjustedCount: Array.from(adjustedCount),
+      adjustedCount: adjustedCount.buffer,
       adjustedTotal,
       unique,
-      hitCounts: Array.from(hitCounts),
+      hitCounts: hitCounts.buffer,
       inputNums: nums
-    });
+    }, [adjustedCount.buffer, hitCounts.buffer]);
   };
 })();
