@@ -245,31 +245,14 @@ body {
   opacity: 0;
   transform: scale(0);
 }
-.result-ball::after {
-  content: '';
-  position: absolute;
-  top: 6%;
-  left: 18%;
-  width: 30%;
-  height: 16%;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,0.65) 0%, transparent 65%);
-  border-radius: 50%;
-  pointer-events: none;
-}
 .result-ball-red {
-  background:
-    radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
-    linear-gradient(180deg, #ff5555 0%, #dd1111 45%, #aa0000 100%);
+  background: linear-gradient(180deg, #ff5555 0%, #dd1111 45%, #aa0000 100%);
 }
 .result-ball-green {
-  background:
-    radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
-    linear-gradient(180deg, #44dd44 0%, #229922 45%, #116611 100%);
+  background: linear-gradient(180deg, #44dd44 0%, #229922 45%, #116611 100%);
 }
 .result-ball-blue {
-  background:
-    radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
-    linear-gradient(180deg, #5599ff 0%, #2244cc 45%, #112288 100%);
+  background: linear-gradient(180deg, #5599ff 0%, #2244cc 45%, #112288 100%);
 }
 .result-plus-sign {
   font-size: 20px;
