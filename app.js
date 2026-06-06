@@ -419,11 +419,31 @@
   // ---------- 开奖模块 ----------
   let isCurrentDrawComplete = false;
   let lastLotteryPeriod = '';
+  let isFetchingLottery = false;
+  let countdownTimer = null;
 
   function checkDrawComplete(item) {
     if (!item || !item.openCode) return false;
     const codes = String(item.openCode).split(',').filter(c => c.trim());
     return codes.length >= 7;
+  }
+
+  function getNextDrawTime() {
+    const now = new Date();
+    const draw = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 35, 0);
+    if (now >= draw) draw.setDate(draw.getDate() + 1);
+    return draw;
+  }
+
+  function updateCountdown() {
+    if (!DOM.lotteryTime) return;
+    const nextDraw = getNextDrawTime();
+    const diff = nextDraw - Date.now();
+    if (diff <= 0) { DOM.lotteryTime.textContent = '开奖中...'; return; }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    DOM.lotteryTime.textContent = '距开奖 ' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
   async function safeFetch(url, options = {}, retries = 2) {
@@ -443,11 +463,14 @@
   }
 
   async function fetchLottery() {
+    if (isFetchingLottery) return;
+    isFetchingLottery = true;
     const btn = DOM.refreshLotteryBtn;
-    if (!btn) return;
-    const origHtml = btn.innerHTML;
-    btn.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>加载中...';
-    btn.disabled = true;
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>加载中...';
+      btn.disabled = true;
+    }
     try {
       const res = await safeFetch(API_CONFIG.live + '?_t=' + Date.now());
       const data = await res.json();
@@ -455,16 +478,16 @@
       const item = data[0];
       if (!item.openCode || !item.wave || !item.zodiac) throw new Error('invalid fields');
       localStorage.setItem(LS_CACHE_KEY, JSON.stringify({ data, time: Date.now() }));
-      if (lastLotteryPeriod !== item.expect) {
-        lastLotteryPeriod = item.expect;
-        isCurrentDrawComplete = false;
-      }
+      const isNewPeriod = lastLotteryPeriod !== item.expect;
+      if (isNewPeriod) { lastLotteryPeriod = item.expect; isCurrentDrawComplete = false; }
       renderLottery(item);
-      if (!isCurrentDrawComplete && checkDrawComplete(item)) {
-        isCurrentDrawComplete = true;
-        showToast('当期开奖已完成，自动刷新停止');
+      if (checkDrawComplete(item)) {
+        if (!isCurrentDrawComplete) { isCurrentDrawComplete = true; showToast('当期开奖已完成'); }
+        else if (isNewPeriod) { isCurrentDrawComplete = true; showToast('新期号已更新'); }
+        else { showToast('刷新成功'); }
       } else {
-        showToast('刷新成功');
+        isCurrentDrawComplete = false;
+        showToast('刷新成功 - 等待开奖');
       }
       if (DOM.lastRefreshTime) DOM.lastRefreshTime.textContent = `上次刷新：${new Date().toLocaleTimeString()}`;
     } catch (e) {
@@ -482,8 +505,8 @@
       }
       showToast('获取开奖失败');
     } finally {
-      btn.innerHTML = origHtml;
-      btn.disabled = false;
+      isFetchingLottery = false;
+      if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
     }
   }
 
@@ -524,22 +547,33 @@
     if (DOM.lotteryTime) DOM.lotteryTime.textContent = escapeHtml((item.openTime || '--').replace(' ', '\n'));
   }
 
-  // ---------- 自动刷新（优化5：链式调用 + 智能时段） ----------
+  // ---------- 自动刷新（开奖时段高频 + 全时段兜底 + 倒计时） ----------
   function initAutoRefresh() {
-    function tick() {
-      if (isCurrentDrawComplete) return;
+    // 启动开奖倒计时显示
+    updateCountdown();
+    countdownTimer = setInterval(updateCountdown, 1000);
+    // 自动刷新策略：开奖时段高频 + 全时段兜底刷新
+    setInterval(() => {
+      if (isFetchingLottery || document.visibilityState !== 'visible') return;
       const now = new Date();
       const totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      const startSec = 21 * 3600 + 33 * 60 + 20; // 21:33:20
-      const endSec = 21 * 3600 + 35 * 60;        // 21:35:00
-      if (document.visibilityState === 'visible' && totalSec >= startSec && totalSec <= endSec) {
+      const DRAW_START = 21 * 3600 + 30 * 60; // 21:30
+      const DRAW_END   = 21 * 3600 + 40 * 60; // 21:40
+      const isInDrawWindow = totalSec >= DRAW_START && totalSec <= DRAW_END;
+      // 开奖时间段：每5秒刷新一次（不判断 isCurrentDrawComplete，以便检测新期号）
+      if (isInDrawWindow) {
+        if (!window._lastAutoFetchTime || (Date.now() - window._lastAutoFetchTime) >= 5000) {
+          window._lastAutoFetchTime = Date.now();
+          fetchLottery();
+        }
+        return;
+      }
+      // 非开奖时间：每60秒刷新一次兜底（检测新期号发布）
+      if (!window._lastRegularFetchTime || (Date.now() - window._lastRegularFetchTime) >= 60000) {
+        window._lastRegularFetchTime = Date.now();
         fetchLottery();
       }
-      // 时间段外延长到 30 秒，减少功耗
-      const delay = (totalSec >= startSec && totalSec <= endSec) ? 5000 : 30000;
-      setTimeout(tick, delay);
-    }
-    setTimeout(tick, 3000); // 首次延迟 3 秒，避免加载瞬间抢资源
+    }, 1000);
   }
 
   // ---------- 抽屉系统 ----------
@@ -1014,7 +1048,7 @@
     fetchLottery();
     runAnalysis();
     initAutoRefresh();
-    window.addEventListener('beforeunload', terminateWorker);
+    window.addEventListener('beforeunload', () => { terminateWorker(); if (countdownTimer) clearInterval(countdownTimer); });
     console.log('✅ 神码再现 v3.7.2 已加载（性能优化版：零拷贝Worker + 对象池粒子 + 输入法防抖 + GPU合成层 + 智能刷新）');
   }
 
