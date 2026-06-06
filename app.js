@@ -925,78 +925,137 @@
     }
   }
 
-  // ---------- 粒子效果（优化2：对象池，零GC） ----------
-  function initParticles() {
-    const canvas = document.getElementById('particle-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    const particles = [];
-    const MAX_PARTICLES = 60;
-    const COLORS = ['#00ffea', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+  // ---------- 粒子系统（支持背景/爆炸/烟花/拖尾四种效果） ----------
+  function ParticleSystem() {
+    this.canvas = document.getElementById('particle-canvas');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.particles = [];
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
+    this.createBackgroundParticles();
+    this.animate();
+  }
 
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+  ParticleSystem.prototype.resizeCanvas = function() {
+    if (!this.canvas) return;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  };
+
+  ParticleSystem.prototype.createBackgroundParticles = function() {
+    if (!this.canvas) return;
+    for (let i = 0; i < 30; i++) {
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        size: Math.random() * 2 + 0.5,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5,
+        color: 'rgba(' + (Math.random() * 100 + 155 | 0) + ',' + (Math.random() * 100 + 155 | 0) + ',255,' + (Math.random() * 0.3 + 0.1).toFixed(2) + ')',
+        type: 'background'
+      });
     }
+  };
 
-    // 对象重置（复用，不新建）
-    function resetParticle(p) {
-      p.x = Math.random() * width;
-      p.y = height + Math.random() * 30;
-      p.r = Math.random() * 2.5 + 0.5;
-      p.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-      p.speed = Math.random() * 0.8 + 0.3;
-      p.sway = Math.random() * 0.4 - 0.2;
-      p.swayOffset = Math.random() * Math.PI * 2;
-      p.alpha = Math.random() * 0.3 + 0.4;
-      p.life = Math.random() * 800 + 600;
-      return p;
+  ParticleSystem.prototype.createExplosion = function(x, y, color, count) {
+    color = color || '#ff3366';
+    count = count || 15;
+    for (let i = 0; i < count; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var speed = Math.random() * 3 + 1;
+      this.particles.push({
+        x: x, y: y,
+        size: Math.random() * 4 + 2,
+        speedX: Math.cos(angle) * speed,
+        speedY: Math.sin(angle) * speed,
+        color: color,
+        life: 1.0,
+        decay: Math.random() * 0.03 + 0.02,
+        type: 'explosion'
+      });
     }
+  };
 
-    // 初始化对象池
-    for (let i = 0; i < MAX_PARTICLES; i++) {
-      particles.push(resetParticle({}));
+  ParticleSystem.prototype.createFireworks = function(x, y, color, count) {
+    color = color || '#00ffea';
+    count = count || 50;
+    for (let i = 0; i < count; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var speed = Math.random() * 5 + 2;
+      this.particles.push({
+        x: x, y: y,
+        size: Math.random() * 3 + 1,
+        speedX: Math.cos(angle) * speed,
+        speedY: Math.sin(angle) * speed,
+        color: color,
+        life: 1.0,
+        decay: Math.random() * 0.02 + 0.01,
+        gravity: 0.05,
+        type: 'firework'
+      });
     }
+  };
 
-    function animate() {
-      if (!width || !height) {
-        requestAnimationFrame(animate);
-        return;
-      }
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.y -= p.speed;
-        p.x += Math.sin(p.swayOffset + p.y * 0.01) * p.sway;
-        p.life--;
+  ParticleSystem.prototype.createTrail = function(x, y, color) {
+    color = color || '#00ffea';
+    for (let i = 0; i < 3; i++) {
+      this.particles.push({
+        x: x + (Math.random() - 0.5) * 10,
+        y: y + (Math.random() - 0.5) * 10,
+        size: Math.random() * 2 + 1,
+        speedX: (Math.random() - 0.5) * 2,
+        speedY: (Math.random() - 0.5) * 2,
+        color: color,
+        life: 0.7,
+        decay: 0.03,
+        type: 'trail'
+      });
+    }
+  };
 
-        // 粒子飞出顶部或寿命耗尽 → 重生（复用对象，无 GC）
-        if (p.life <= 0 || p.y < -20) {
-          resetParticle(p);
+  ParticleSystem.prototype.animate = function() {
+    if (!this.canvas || !this.ctx) return;
+    var self = this;
+    var ctx = this.ctx;
+    var w = this.canvas.width;
+    var h = this.canvas.height;
+
+    ctx.fillStyle = 'rgba(5, 5, 16, 0.1)';
+    ctx.fillRect(0, 0, w, h);
+
+    for (var i = self.particles.length - 1; i >= 0; i--) {
+      var p = self.particles[i];
+      p.x += p.speedX;
+      p.y += p.speedY;
+
+      if (p.gravity) p.speedY += p.gravity;
+
+      if (p.life !== undefined) {
+        p.life -= p.decay;
+        if (p.life <= 0) {
+          self.particles.splice(i, 1);
           continue;
         }
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.fill();
-
-        // 高光
-        ctx.beginPath();
-        ctx.arc(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.3, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.fill();
       }
-      ctx.globalAlpha = 1;
-      requestAnimationFrame(animate);
+
+      if (p.type === 'background') {
+        if (p.x < 0) p.x = w;
+        if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h;
+        if (p.y > h) p.y = 0;
+      }
+
+      ctx.globalAlpha = p.life !== undefined ? p.life : 0.5;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
     }
 
-    resize();
-    animate();
-    window.addEventListener('resize', resize);
-  }
+    ctx.globalAlpha = 1.0;
+    requestAnimationFrame(function() { self.animate(); });
+  };
 
   // ---------- 初始化入口 ----------
   function init() {
@@ -1005,7 +1064,7 @@
     initWorker();
     subscribe(onStateChange);
     initResultDelegation();
-    initParticles();
+    new ParticleSystem();
     DrawerSystem.setupGlobalListeners();
 
     if (DOM.exampleBtn) DOM.exampleBtn.addEventListener('click', () => { if (DOM.numbers) DOM.numbers.value = '龙蛇马 12 25 36 8 17 29 41 5 19 33 47'; runAnalysis(); });
