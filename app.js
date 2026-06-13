@@ -306,7 +306,7 @@
     }
 
     if (unique === 0 && freqs.length === 0) {
-      htmlParts.push('<div class="text-center py-8 text-amber-400">⚡ 所有号码频次归零，请输入数据 ⚡</div>');
+      htmlParts.push('<div class="text-center py-8 text-amber-400">⚡ 所有号码频次归零，请输入号码 ⚡</div>');
     }
 
     htmlParts.push(`<div class="mt-4 grid grid-cols-3 gap-2 p-3 bg-transparent rounded-lg border border-[#00ffea]/20"><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${unique}</div><div class="text-xs text-gray-500">有效数字个数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${adjustedTotal}</div><div class="text-xs text-gray-500">调整后总次数</div></div><div class="text-center"><div class="text-[#00ffea] font-bold text-lg">${avg}</div><div class="text-xs text-gray-500">调整后平均次数</div></div></div>`);
@@ -421,6 +421,18 @@
   let lastLotteryPeriod = '';
   let isFetchingLottery = false;
   let countdownTimer = null;
+  let autoRefreshTimer = null;      // 借鉴aczj.cc: 时段检测定时器
+  let regularPollTimer = null;       // 借鉴aczj.cc: 常规轮询定时器
+  let lastDrawFetchTime = 0;         // 替代 window._lastAutoFetchTime
+  let lastRegularFetchTime = 0;      // 替代 window._lastRegularFetchTime
+  let inDrawWindowFlag = false;      // 借鉴aczj.cc: 窗口状态标记
+  const DRAW_CONFIG = {              // 集中配置开奖时段参数
+    startH: 21, startM: 33,          // 21:33 开奖时段起始
+    endH: 21,   endM: 35,            // 21:35 开奖时段结束
+    pollMs: 5000,                    // 开奖时段内轮询间隔(5秒)
+    regularMs: 60000,                // 常规刷新间隔(60秒)
+    fetchTimeout: 5000               // 网络请求超时(5秒，开奖时段缩短)
+  };
 
   function checkDrawComplete(item) {
     if (!item || !item.openCode) return false;
@@ -430,7 +442,7 @@
 
   function getNextDrawTime() {
     const now = new Date();
-    const draw = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 35, 0);
+    const draw = new Date(now.getFullYear(), now.getMonth(), now.getDate(), DRAW_CONFIG.startH, DRAW_CONFIG.startM, 0);
     if (now >= draw) draw.setDate(draw.getDate() + 1);
     return draw;
   }
@@ -449,8 +461,10 @@
   async function safeFetch(url, options = {}, retries = 2) {
     for (let i = 0; i <= retries; i++) {
       try {
+        // 开奖时段内缩短超时，减少isFetchingLottery锁竞争
+        const timeoutMs = options.timeout || (inDrawWindowFlag ? DRAW_CONFIG.fetchTimeout : 8000);
         const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), options.timeout || 8000);
+        const tid = setTimeout(() => ctrl.abort(), timeoutMs);
         const res = await fetch(url, { ...options, signal: ctrl.signal });
         clearTimeout(tid);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -547,33 +561,61 @@
     if (DOM.lotteryTime) DOM.lotteryTime.textContent = escapeHtml((item.openTime || '--').replace(' ', '\n'));
   }
 
-  // ---------- 自动刷新（开奖时段高频 + 全时段兜底 + 倒计时） ----------
-  function initAutoRefresh() {
-    // 启动开奖倒计时显示
-    updateCountdown();
-    countdownTimer = setInterval(updateCountdown, 1000);
-    // 自动刷新策略：开奖时段高频 + 全时段兜底刷新
-    setInterval(() => {
-      if (isFetchingLottery || document.visibilityState !== 'visible') return;
-      const now = new Date();
-      const totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      const DRAW_START = 21 * 3600 + 30 * 60; // 21:30
-      const DRAW_END   = 21 * 3600 + 40 * 60; // 21:40
-      const isInDrawWindow = totalSec >= DRAW_START && totalSec <= DRAW_END;
-      // 开奖时间段：每5秒刷新一次（不判断 isCurrentDrawComplete，以便检测新期号）
-      if (isInDrawWindow) {
-        if (!window._lastAutoFetchTime || (Date.now() - window._lastAutoFetchTime) >= 5000) {
-          window._lastAutoFetchTime = Date.now();
-          fetchLottery();
-        }
-        return;
-      }
-      // 非开奖时间：每60秒刷新一次兜底（检测新期号发布）
-      if (!window._lastRegularFetchTime || (Date.now() - window._lastRegularFetchTime) >= 60000) {
-        window._lastRegularFetchTime = Date.now();
+  // ---------- 借鉴aczj.cc: 智能刷新系统(三重定时器协作) ----------
+  // 定时器1: countdownTimer(1000ms)   → 倒计时显示
+  // 定时器2: autoRefreshTimer(4000ms)  → 智能时段检测(checkDrawWindow)
+  // 定时器3: regularPollTimer(10000ms) → 常规轮询(regularPoll)
+  function isInDrawWindow() {
+    const now = new Date();
+    const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+    const startSec = DRAW_CONFIG.startH * 3600 + DRAW_CONFIG.startM * 60;
+    const endSec   = DRAW_CONFIG.endH   * 3600 + DRAW_CONFIG.endM   * 60;
+    const nowSec = h * 3600 + m * 60 + s;
+    return nowSec >= startSec && nowSec <= endSec;
+  }
+  function checkDrawWindow() {
+    const wasInWindow = inDrawWindowFlag;
+    inDrawWindowFlag = isInDrawWindow();
+    // 刚进入开奖窗口 → 立即刷新(第一时间看到号码)
+    if (inDrawWindowFlag && !wasInWindow) {
+      console.log('[开奖时段] 进入 ' + DRAW_CONFIG.startH + ':' + DRAW_CONFIG.startM + '~' + DRAW_CONFIG.endH + ':' + DRAW_CONFIG.endM + ' 窗口，启用' + (DRAW_CONFIG.pollMs/1000) + '秒高频刷新');
+      fetchLottery();
+      lastDrawFetchTime = Date.now();
+      return;
+    }
+    // 处于开奖窗口内 → 按pollMs间隔轮询
+    if (inDrawWindowFlag) {
+      const elapsed = Date.now() - lastDrawFetchTime;
+      if (elapsed >= DRAW_CONFIG.pollMs) {
+        lastDrawFetchTime = Date.now();
         fetchLottery();
       }
-    }, 1000);
+    }
+  }
+  function regularPoll() {
+    // 开奖时段内由checkDrawWindow负责，这里只处理常规时段
+    if (inDrawWindowFlag) return;
+    const elapsed = Date.now() - lastRegularFetchTime;
+    if (elapsed >= DRAW_CONFIG.regularMs) {
+      lastRegularFetchTime = Date.now();
+      fetchLottery();
+    }
+  }
+  function initAutoRefresh() {
+    // 定时器1: 倒计时每秒更新
+    updateCountdown();
+    countdownTimer = setInterval(updateCountdown, 1000);
+    // 定时器2: 时段检测每4秒(借鉴aczj.cc的CheckLotteryTime间隔)
+    checkDrawWindow();
+    autoRefreshTimer = setInterval(checkDrawWindow, 4000);
+    // 定时器3: 常规轮询每10秒检查
+    regularPollTimer = setInterval(regularPoll, 10000);
+    // 切回前台立即补刷(确保后台切回后数据最新)
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        setTimeout(function() { fetchLottery(); }, 300);
+      }
+    });
   }
 
   // ---------- 抽屉系统 ----------
@@ -1107,7 +1149,12 @@
     fetchLottery();
     runAnalysis();
     initAutoRefresh();
-    window.addEventListener('beforeunload', () => { terminateWorker(); if (countdownTimer) clearInterval(countdownTimer); });
+    window.addEventListener('beforeunload', () => {
+      terminateWorker();
+      if (countdownTimer) clearInterval(countdownTimer);
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      if (regularPollTimer) clearInterval(regularPollTimer);
+    });
     console.log('✅ 神码再现 v3.7.2 已加载（性能优化版：零拷贝Worker + 对象池粒子 + 输入法防抖 + GPU合成层 + 智能刷新）');
   }
 
