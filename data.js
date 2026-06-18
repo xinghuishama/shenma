@@ -2,6 +2,21 @@
 (function () {
   "use strict";
 
+  const DATA_VERSION = "2026-06-19";
+  const LS_DATA_VERSION_KEY = "shenma_data_version";
+
+  // 数据版本检测：版本变更时自动清理旧存储，避免旧数据污染
+  try {
+    const oldVersion = localStorage.getItem(LS_DATA_VERSION_KEY);
+    if (oldVersion !== DATA_VERSION) {
+      localStorage.clear();
+      localStorage.setItem(LS_DATA_VERSION_KEY, DATA_VERSION);
+      console.log('[data.js] 数据版本已更新，已清理旧本地存储');
+    }
+  } catch (e) {
+    console.warn('[data.js] 版本检测失败:', e);
+  }
+
   const MAX_NUMBERS = 5000;
 
   const SHENGXIAO = {
@@ -46,7 +61,7 @@
     numProps[n] = { head, tail, color, odd, five, sumOdd, duan, halfOddEven, shengXiao, sum };
   }
 
-  const APP_DATA = { MAX_NUMBERS, SHENGXIAO, CATEGORIES, DUAN, numProps };
+  const APP_DATA = { MAX_NUMBERS, SHENGXIAO, CATEGORIES, DUAN, numProps, DATA_VERSION };
   if (typeof window !== "undefined") window.APP_DATA = APP_DATA;
   if (typeof self !== "undefined") self.APP_DATA = APP_DATA;
 })();

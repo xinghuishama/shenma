@@ -1,18 +1,10 @@
-// ======================== worker.js v3.6.3 ========================
+// ======================== worker.js v3.7.2 ========================
 (function () {
   "use strict";
 
   const MAX_NUMBERS = 5000;
   const ZODIAC_SEQUENCE = ["龙","蛇","马","羊","猴","鸡","狗","猪","鼠","牛","虎","兔"];
   const BASE_YEAR = 2024;
-  const wuxingMapCache = {};
-
-  function getCachedWuxing(year) {
-    if (!wuxingMapCache[year]) {
-      wuxingMapCache[year] = getWuxingMap(year);
-    }
-    return wuxingMapCache[year];
-  }
 
   function generateShengxiaoMap(year) {
     const taiSuiIdx = ((year - BASE_YEAR) % 12 + 12) % 12;
@@ -30,13 +22,16 @@
     return map;
   }
 
-  // ==================== 五行自动跨年 ====================
+  // ==================== 五行自动跨年 + 缓存 ====================
   const WUXING_BASE_SEQ = [
     '金','金','土','土','木','木','火','火','金','金',
     '水','水','木','木','火','火','土','土','水','水',
     '木','木','金','金','土','土','水','水','火','火'
   ];
-  function getCachedWuxing(year) {
+
+  let wuxingMapCache = {};
+
+  function getWuxingMap(year) {
     const offset = year - 2023;
     const map = new Map();
     for (let n = 1; n <= 49; n++) {
@@ -44,6 +39,13 @@
       map.set(n, wx);
     }
     return map;
+  }
+
+  function getCachedWuxing(year) {
+    if (!wuxingMapCache[year]) {
+      wuxingMapCache[year] = getWuxingMap(year);
+    }
+    return wuxingMapCache[year];
   }
 
   const FALLBACK_YEAR = new Date().getFullYear();
@@ -157,6 +159,7 @@
     const hits = new Uint8Array(50);
     const killSet = new Set(killNums);
     const sig = filters.join("\x00");
+    const maxHit = 1 + filters.length; // kill(1) + 条件命中数
     if (!cachedFuncs || sig !== lastFiltersSignature) {
       cachedFuncs = filters.map(buildMatchFunc);
       lastFiltersSignature = sig;

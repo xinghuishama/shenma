@@ -186,6 +186,7 @@
   // ---------- Worker 通信（优化1：零拷贝） ----------
   let analysisWorker = null;
   let debounceTimer = null;
+  let inputDebounceTimer = null; // 输入专用防抖计时器
   function initWorker() {
     if (analysisWorker) return;
     try {
@@ -196,15 +197,13 @@
   }
   function terminateWorker() { if (analysisWorker) { analysisWorker.terminate(); analysisWorker = null; } }
   function onWorkerMessage(e) {
-    if (e.data && e.data.error) {
-      console.error(e.data.error);
-      if (typeof showToast === "function") {
-        showToast("计算失败：" + e.data.error);
-      }
-      return;
-    }
-
     try {
+      // 处理 Worker 错误回传
+      if (e.data.error) {
+        console.error('Worker 错误:', e.data.error);
+        showToast('计算失败：' + e.data.error);
+        return;
+      }
       // 零拷贝重建 TypedArray，不触发 GC
       const adjustedCount = new Uint16Array(e.data.adjustedCount);
       const hitCounts = new Uint8Array(e.data.hitCounts);
@@ -671,7 +670,6 @@
         const sel = state.selectedFilters.heshu;
         return `<div class="grid grid-cols-4 gap-2">${hes.map(h => `<label><input type="checkbox" class="filter-checkbox hidden" value="${h}" data-drawer="heshu" ${sel.includes(h) ? 'checked' : ''}><span class="filter-label block text-center py-2 bg-[#1a1a2a] rounded-lg text-xs">${h}</span></label>`).join('')}</div>`;
       },
-      live: () => `<div class="flex flex-col" style="height: calc(90vh - 68px); min-height: 480px;"><div class="flex items-center justify-between mb-2 px-1 flex-wrap gap-2"><span class="text-xs text-gray-400">直连视频流播放 · 自动切换备选源</span><a href="https://macaujc.com/open_video2/" target="_blank" rel="noopener noreferrer" class="text-xs bg-[#00ffea]/20 text-[#00ffea] px-3 py-1.5 rounded-lg border border-[#00ffea]/40 hover:bg-[#00ffea]/30 transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>新窗口观看</a></div><div class="flex gap-2 mb-3 flex-wrap" id="live-source-btns"><button data-src-idx="0" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#00ffea] text-black border border-[#00ffea]">源1·API获取</button><button data-src-idx="1" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a1a2a] text-gray-400 border border-[#00ffea]/20">源2·HLS</button><button data-src-idx="2" class="live-src-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a1a2a] text-gray-400 border border-[#00ffea]/20">源3·FLV</button></div><div class="relative flex-1 bg-black rounded-2xl overflow-hidden border border-[#00ffea]/40 shadow-2xl"><video id="live-video" class="w-full h-full" controls autoplay playsinline muted style="background:#000;"></video><div id="live-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-black z-10"><svg class="animate-spin w-8 h-8 text-[#00ffea] mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><span class="text-sm text-gray-400" id="live-status">正在获取直播源...</span></div><div id="live-error" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a12] z-20 p-6 text-center"><svg class="w-12 h-12 text-red-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><p class="text-red-400 font-bold mb-1">直播源加载失败</p><p class="text-xs text-gray-500 mb-4">所有备选源均无法连接</p><a href="https://macaujc.com/open_video2/" target="_blank" rel="noopener noreferrer" class="bg-gradient-to-r from-[#00ffea] to-[#0088ff] text-black font-bold px-6 py-2.5 rounded-xl hover:shadow-[0_0_20px_rgba(0,255,234,0.4)] transition-all flex items-center gap-2 mb-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>macaujc.com 直播</a><a href="https://momarksix.org/video" target="_blank" rel="noopener noreferrer" class="bg-[#1a1a2a] text-[#00ffea] font-bold px-6 py-2.5 rounded-xl border border-[#00ffea]/30 hover:bg-[#00ffea]/10 transition-all flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>备用直播站</a></div></div></div>`,
       history: () => {
         let opts = '';
         for (let y = new Date().getFullYear(); y >= 2020; y--) opts += `<option value="${y}">${y}年</option>`;
@@ -681,7 +679,7 @@
     open(type) {
       if (this.current === type) { this.close(); return; }
       this.current = type;
-      const titles = { shama:'杀码', shengxiao:'生肖', haomatou:'头数', weishu:'尾数', shuduan:'数段', bose:'波色', wuxing:'五行', bandanshuang:'半单双', heshu:'合数', live:'开奖直播', history:'历史开奖' };
+      const titles = { shama:'杀码', shengxiao:'生肖', haomatou:'头数', weishu:'尾数', shuduan:'数段', bose:'波色', wuxing:'五行', bandanshuang:'半单双', heshu:'合数', history:'历史开奖' };
       if (DOM.drawer_title) DOM.drawer_title.textContent = titles[type] || '筛选器';
       try {
         if (DOM.drawer_content) {
@@ -706,9 +704,6 @@
               sel.dispatchEvent(new Event('change'));
             }
           }, 80);
-        }
-        if (type === 'live') {
-          setTimeout(() => initLivePlayer(), 20);
         }
       } catch (err) {
         console.error('DrawerSystem.open 错误:', err);
@@ -871,110 +866,6 @@
     }
   }
 
-  // ---------- 直播播放器 ----------
-  let currentHls = null, currentFlvPlayer = null, liveSourceIndex = 0;
-  const LIVE_SOURCES = [
-    { name: 'API获取', type: 'auto', url: '' },
-    { name: 'HLS源1', type: 'hls', url: 'https://media.macaumarksix.com/live/marksix.m3u8' },
-    { name: 'FLV源1', type: 'flv', url: 'https://media.macaumarksix.com/live/marksix.flv' }
-  ];
-  function initLivePlayer() {
-    const video = document.getElementById('live-video');
-    if (!video) { console.warn('live-video 元素未找到'); return; }
-    const srcBtns = document.querySelectorAll('.live-src-btn');
-    if (srcBtns.length) {
-      srcBtns.forEach((btn, idx) => {
-        btn.removeEventListener('click', () => {});
-        btn.addEventListener('click', () => {
-          srcBtns.forEach(b => { b.classList.remove('bg-[#00ffea]','text-black'); b.classList.add('bg-[#1a1a2a]','text-gray-400'); });
-          btn.classList.remove('bg-[#1a1a2a]','text-gray-400');
-          btn.classList.add('bg-[#00ffea]','text-black');
-          liveSourceIndex = idx;
-          connectLiveSource(idx);
-        });
-      });
-    }
-    connectLiveSource(0);
-    function connectLiveSource(idx) {
-      destroyLivePlayer();
-      const loading = document.getElementById('live-loading');
-      const errorDiv = document.getElementById('live-error');
-      const statusSpan = document.getElementById('live-status');
-      if (loading) loading.classList.remove('hidden');
-      if (errorDiv) errorDiv.classList.add('hidden');
-      if (statusSpan) statusSpan.textContent = `正在连接 ${LIVE_SOURCES[idx].name}...`;
-      const src = LIVE_SOURCES[idx];
-      if (src.type === 'auto') {
-        fetch(API_CONFIG.live + '?_t=' + Date.now())
-          .then(r => r.json())
-          .then(data => {
-            if (data && data[0] && data[0].videoUrl) {
-              playStream(data[0].videoUrl, detectStreamType(data[0].videoUrl));
-            } else {
-              if (idx + 1 < LIVE_SOURCES.length) setTimeout(() => connectLiveSource(idx+1), 1000);
-              else showLiveError();
-            }
-          })
-          .catch(() => { if (idx+1 < LIVE_SOURCES.length) setTimeout(() => connectLiveSource(idx+1), 1000); else showLiveError(); });
-      } else if (src.url) {
-        playStream(src.url, src.type);
-      } else {
-        showLiveError();
-      }
-    }
-    function detectStreamType(url) { return url.includes('.m3u8') ? 'hls' : (url.includes('.flv') ? 'flv' : 'hls'); }
-    function playStream(url, type) {
-      const video = document.getElementById('live-video');
-      const loading = document.getElementById('live-loading');
-      if (type === 'hls' && window.Hls && Hls.isSupported()) {
-        currentHls = new Hls({ enableWorker: true, lowLatencyMode: true });
-        currentHls.loadSource(url);
-        currentHls.attachMedia(video);
-        currentHls.on(Hls.Events.MANIFEST_PARSED, () => { if (loading) loading.classList.add('hidden'); video.play().catch(()=>{}); });
-        currentHls.on(Hls.Events.ERROR, () => tryNextSource());
-      } else if (type === 'flv' && window.flvjs && flvjs.isSupported()) {
-        currentFlvPlayer = flvjs.createPlayer({ type: 'flv', url, isLive: true });
-        currentFlvPlayer.attachMediaElement(video);
-        currentFlvPlayer.load();
-        currentFlvPlayer.play();
-        currentFlvPlayer.on(flvjs.Events.LOADING_COMPLETE, () => { if (loading) loading.classList.add('hidden'); });
-        currentFlvPlayer.on(flvjs.Events.ERROR, () => tryNextSource());
-        setTimeout(() => { if (loading) loading.classList.add('hidden'); }, 3000);
-      } else {
-        video.src = url;
-        video.addEventListener('loadedmetadata', () => { if (loading) loading.classList.add('hidden'); });
-        video.addEventListener('error', () => tryNextSource());
-        video.play().catch(()=>{});
-      }
-    }
-    function tryNextSource() {
-      destroyLivePlayer();
-      if (liveSourceIndex + 1 < LIVE_SOURCES.length) {
-        liveSourceIndex++;
-        const btns = document.querySelectorAll('.live-src-btn');
-        btns.forEach((b,i) => {
-          if (i === liveSourceIndex) { b.classList.remove('bg-[#1a1a2a]','text-gray-400'); b.classList.add('bg-[#00ffea]','text-black'); }
-          else { b.classList.remove('bg-[#00ffea]','text-black'); b.classList.add('bg-[#1a1a2a]','text-gray-400'); }
-        });
-        connectLiveSource(liveSourceIndex);
-      } else {
-        showLiveError();
-      }
-    }
-    function showLiveError() {
-      const loading = document.getElementById('live-loading');
-      const errorDiv = document.getElementById('live-error');
-      if (loading) loading.classList.add('hidden');
-      if (errorDiv) errorDiv.classList.remove('hidden');
-    }
-    function destroyLivePlayer() {
-      if (currentHls) { currentHls.destroy(); currentHls = null; }
-      if (currentFlvPlayer) { currentFlvPlayer.destroy(); currentFlvPlayer = null; }
-      const video = document.getElementById('live-video');
-      if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
-    }
-  }
-
   // ---------- 粒子系统（支持背景/爆炸/烟花/拖尾四种效果） ----------
   function ParticleSystem() {
     this.canvas = document.getElementById('particle-canvas');
@@ -1120,14 +1011,19 @@
     if (DOM.exampleBtn) DOM.exampleBtn.addEventListener('click', () => { if (DOM.numbers) DOM.numbers.value = '龙蛇马 12 25 36 8 17 29 41 5 19 33 47'; runAnalysis(); });
     if (DOM.clearBtn) DOM.clearBtn.addEventListener('click', () => { if (DOM.numbers) DOM.numbers.value = ''; runAnalysis(); showToast('已清空输入'); });
     if (DOM.copyResultBtn) DOM.copyResultBtn.addEventListener('click', copyResult);
-    
-    // 优化3：输入法感知 + 自适应防抖
+
+    // 优化3：输入法感知 + 300ms 防抖（手机流畅）
     if (DOM.numbers) {
-      DOM.numbers.addEventListener('input', runAnalysis);
+      DOM.numbers.addEventListener('input', () => {
+        clearTimeout(inputDebounceTimer);
+        inputDebounceTimer = setTimeout(() => {
+          runAnalysis();
+        }, 300);
+      });
       DOM.numbers.addEventListener('compositionstart', () => { isComposing = true; });
       DOM.numbers.addEventListener('compositionend', () => { isComposing = false; runAnalysis(); });
     }
-    
+
     if (DOM.refreshLotteryBtn) DOM.refreshLotteryBtn.addEventListener('click', fetchLottery);
 
     const navItems = document.querySelectorAll('.nav-item');

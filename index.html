@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>神码再现 v3.8.0 · 智能分析引擎</title>
+<title>神码再现 v3.7.2 · 智能分析引擎</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.0/dist/hls.min.js"></script>
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="mech-grid">
@@ -16,8 +15,9 @@
 
 <div class="relative z-10 max-w-md mx-auto px-3 pt-4 pb-24">
   <header class="text-center mb-4">
+    <div id="offlineStatus" class="text-xs font-mono mb-1 opacity-80"></div>
     <h1 class="text-2xl font-bold text-[#00ffea] tracking-wider" style="text-shadow:0 0 10px rgba(0,255,234,0.5);">神码再现</h1>
-    <p class="text-xs text-gray-400 mt-1">v3.7.2 离线缓存版 · 零拷贝Worker · 对象池粒子 · 智能刷新</p>
+    <p class="text-xs text-gray-400 mt-1">离线缓存版 · 零拷贝Worker · 对象池粒子 ·</p>
   </header>
 
   <div class="lottery-card mb-4">
@@ -50,7 +50,6 @@
   <button class="nav-item" data-drawer="wuxing">五行</button>
   <button class="nav-item" data-drawer="bandanshuang">半单双</button>
   <button class="nav-item" data-drawer="heshu">合数</button>
-  <button class="nav-item" data-drawer="live">直播</button>
   <button class="nav-item" data-drawer="history">历史</button>
   <button class="nav-item nav-clear" data-drawer="selectnone">清空</button>
 </nav>
@@ -64,6 +63,24 @@
 <script src="data.js"></script>
 <script src="app.js"></script>
 
+<!-- 在线状态显示 -->
+<script>
+function updateOnlineStatus(){
+    const el = document.getElementById("offlineStatus");
+    if (!el) return;
+    if (navigator.onLine) {
+        el.textContent = "● 在线";
+        el.className = "text-xs font-mono mb-1 text-green-400 opacity-80";
+    } else {
+        el.textContent = "● 离线模式";
+        el.className = "text-xs font-mono mb-1 text-amber-400 opacity-80";
+    }
+}
+window.addEventListener("online", updateOnlineStatus);
+window.addEventListener("offline", updateOnlineStatus);
+updateOnlineStatus();
+</script>
+
 <!-- Service Worker 注册：离线缓存 + 更新检测 -->
 <script>
   if ('serviceWorker' in navigator) {
@@ -75,7 +92,7 @@
           if (newWorker.state === 'activated') {
             const toast = document.getElementById('toast');
             if (toast) {
-              toast.textContent = '🔄 已更新至最新版，请刷新页面';
+              toast.textContent = '已更新至最新版，请刷新页面';
               toast.classList.remove('translate-y-20', 'opacity-0');
               setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 4000);
             }
