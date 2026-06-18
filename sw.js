@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shenma-v3.7.2-v1';
+const CACHE_NAME = 'shenma-v3.8.0-v1';
 const CORE_ASSETS = [
   './',
   './index.html',

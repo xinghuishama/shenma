@@ -196,6 +196,14 @@
   }
   function terminateWorker() { if (analysisWorker) { analysisWorker.terminate(); analysisWorker = null; } }
   function onWorkerMessage(e) {
+    if (e.data && e.data.error) {
+      console.error(e.data.error);
+      if (typeof showToast === "function") {
+        showToast("计算失败：" + e.data.error);
+      }
+      return;
+    }
+
     try {
       // 零拷贝重建 TypedArray，不触发 GC
       const adjustedCount = new Uint16Array(e.data.adjustedCount);
