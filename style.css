@@ -210,17 +210,27 @@ body {
   text-align: center;
 }
 .result-balls-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.result-ball-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex-wrap: nowrap;
+      padding: 8px 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .result-balls-row::-webkit-scrollbar {
+      height: 3px;
+    }
+    .result-ball-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      flex-shrink: 0;
+    }
 }
 .result-ball {
   width: 44px;
