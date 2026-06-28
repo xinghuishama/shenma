@@ -156,29 +156,24 @@
         }
     }
 
-    function onWorkerMessage(e) {
-        try {
-            const { type, payload } = e.data;
-            if (type === 'error') {
-                showToast('计算失败：' + payload);
-                return;
-            }
-            if (type === 'result' && payload) {
-                // 零拷贝解析 ArrayBuffer
-                const { buffer, adjustedTotal, unique } = payload;
-                
-                // buffer 包含两部分：Uint16Array(50) + Uint8Array(50)
-                // 内存布局：前100字节是Uint16，后50字节是Uint8
-                const adjustedCount = new Uint16Array(buffer, 0, 50);
-                const hitCounts = new Uint8Array(buffer, 100, 50);
-
-                // 转为数组供渲染使用
-                renderResult(Array.from(adjustedCount), adjustedTotal, unique, Array.from(hitCounts));
-            }
-        } catch (err) {
-            console.error('处理 Worker 结果失败', err);
+function onWorkerMessage(e) {
+    try {
+        const data = e.data;
+        if (data.error) {
+            showToast('计算失败：' + data.error);
+            return;
         }
+        if (data.buffer) {
+            const { buffer, adjustedTotal, unique } = data;
+            const adjustedCount = new Uint16Array(buffer, 0, 50);
+            const hitCounts = new Uint8Array(buffer, 100, 50);
+            renderResult(Array.from(adjustedCount), adjustedTotal, unique, Array.from(hitCounts));
+        }
+    } catch (err) {
+        console.error('Worker 消息处理异常', err);
+        showToast('结果处理失败，请重试');
     }
+}
 
     function runAnalysis() {
         initWorker();

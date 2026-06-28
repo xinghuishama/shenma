@@ -74,32 +74,36 @@
     SHENGXIAO = DEFAULT_SHENGXIAO;
 
     // 4. 消息监听
-    self.onmessage = function(e) {
-        const { type, payload } = e.data;
+   // ======================== worker.js 内部修改片段 ========================
 
-        // 如果主线程发送了初始化数据，则更新 (覆盖默认数据，保证数据一致性)
-        if (type === 'init') {
-            if (payload.numProps) {
-                numProps = payload.numProps;
-            }
-            if (payload.shengxiao) {
-                SHENGXIAO = payload.shengxiao;
-            }
-            console.log('[Worker] 已同步主线程最新数据');
-            return;
-        }
+self.onmessage = function(e) {
+    const { type, payload } = e.data;
 
-        if (type === 'analyze') {
-            try {
-                const result = processAnalysis(payload);
-                // 使用 Transferable 传输结果
-                self.postMessage({ type: 'result', payload: result }, [result.buffer]);
-            } catch (err) {
-                console.error('[Worker Error]', err);
-                self.postMessage({ type: 'error', payload: err.message });
-            }
+    // 初始化逻辑保持不变
+    if (type === 'init') {
+        if (payload.numProps) numProps = payload.numProps;
+        if (payload.shengxiao) SHENGXIAO = payload.shengxiao;
+        return;
+    }
+
+    if (type === 'analyze') {
+        try {
+            const result = processAnalysis(payload);
+            
+            // 【关键修改】直接发送包含 buffer 的对象，不再包装 type/payload
+            // 这样发送出的数据结构是: { buffer, adjustedTotal, unique }
+            // 正好匹配您 app.js 中的 if(data.buffer) 判断
+            self.postMessage(result, [result.buffer]);
+            
+        } catch (err) {
+            // 【关键修改】错误也直接发送 error 字段
+            // 匹配您 app.js 中的 if(data.error) 判断
+            self.postMessage({ error: err.message });
         }
-    };
+    }
+};
+
+// processAnalysis 函数保持不变，返回 { buffer, adjustedTotal, unique }
 
     // 5. 核心分析逻辑
     function processAnalysis(payload) {
