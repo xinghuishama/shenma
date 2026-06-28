@@ -301,7 +301,7 @@
         if (adjustedCount[n] === 0) zeroNums.push(n);
       }
       if (zeroNums.length) {
-        htmlParts.push('<div class="flex items-start gap-2 mb-2 flex-wrap"><span class="text-xs text-green-500 font-mono min-w-[36px] pt-2">0次：</span><div class="flex flex-wrap gap-1.5 flex-1">');
+        htmlParts.push('<div class="flex items-start gap-2 mb-2 flex-wrap"><span class="text-xs text-green-500 font-mono min-w-[36px] pt-2">0次：</span><div class="flex flex-wrap gap-1 flex-1">');
         zeroNums.sort((a,b) => a - b);
         for (const n of zeroNums) {
           const p = numProps[n];
