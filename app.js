@@ -275,7 +275,7 @@
         htmlParts.push('<div class="kill-line"></div>');
         killDrawn = true;
       }
-      htmlParts.push(`<div class="flex items-start gap-2 mb-2 flex-wrap"><span class="text-xs text-green-500 font-mono min-w-[36px] pt-2">${f}次：</span><div class="flex flex-wrap gap-1.5 flex-1">`);
+      htmlParts.push(`<div class="flex items-start gap-1 mb-1 flex-wrap"><span class="text-xs text-green-500 font-mono min-w-[36px] pt-2">${f}次：</span><div class="flex flex-wrap gap-1 flex-1">`);
       const nums = freqMap.get(f).sort((a,b) => a - b);
       for (const n of nums) {
         const hit = hitCounts[n] || 0;
