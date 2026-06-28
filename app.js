@@ -301,7 +301,7 @@
         if (adjustedCount[n] === 0) zeroNums.push(n);
       }
       if (zeroNums.length) {
-        htmlParts.push('<div class="zero-count-section"><div class="zero-count-label">0次（未出现 ' + zeroNums.length + ' 个）：</div><div class="flex flex-wrap gap-1.5">');
+        htmlParts.push('<div class="zero-count-section"><div class="zero-count-label">0次：</div><div class="flex flex-wrap gap-1.5">');
         zeroNums.sort((a,b) => a - b);
         for (const n of zeroNums) {
           const p = numProps[n];
